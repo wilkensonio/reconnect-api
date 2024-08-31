@@ -4,3 +4,6 @@ sqlalchemy
 pydantic
 pytest
 httpx
+sqlalchemy
+mysql-connector-python
+python-dotenv
