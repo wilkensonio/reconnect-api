@@ -2,7 +2,7 @@ name: FastAPI CI/CD to AWS
 
 on:
   pull_request:
-    types: [closed]
+    types: [opened, reopened, synchronize] # Run on PR open, reopen, or sync
     branches:
       - main
 
