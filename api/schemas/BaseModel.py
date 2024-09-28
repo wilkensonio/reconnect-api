@@ -9,5 +9,6 @@ class CommonBaseModel(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.now().isoformat())
 
     class Config:
-        anystr_strip_whitespace = True
+        from_attributes = True
+        str_strip_whitespace = True
         validate_assignment = True
