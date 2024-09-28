@@ -10,3 +10,6 @@ run command :
 
     - python3 or python uvicorn_config.py
 
+
+API docs: base_url:port/docs
+
