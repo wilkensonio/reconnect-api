@@ -15,6 +15,13 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      - name: Authenticate with GitHub using PAT
+        run: |
+          echo "${{ secrets.GH_TOKEN }}" | gh auth login --with-token
+
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
