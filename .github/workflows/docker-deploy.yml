@@ -1,4 +1,4 @@
-name: FastAPI CI/CD to AWS
+name: FastAPI tests and Docker deploy
 
 on:
   pull_request:
@@ -11,8 +11,40 @@ permissions:
   actions: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: set DATABASE_URL
+        run: echo "DATABASE_URL=sqlite:///./test.db" > $GITHUB_ENV
+
+      - name: Set up production database environment variables
+        run: |
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> $GITHUB_ENV
+          echo "DB_USER=reconnect" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> $GITHUB_ENV 
+          echo "EXPRIRES_MINUTES=30" >> $GITHUB_ENV 
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=30" >> $GITHUB_ENV 
+          echo "DB_NAME=reconnect" >> $GITHUB_ENV
+          echo "DB_PORT=3306" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: pytest tests
+
   build:
     runs-on: ubuntu-latest
+    needs: test # Wait for the test job to complete
 
     steps:
       - name: Check out code
