@@ -33,5 +33,3 @@ jobs:
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
-
-        # Deploy to AWS

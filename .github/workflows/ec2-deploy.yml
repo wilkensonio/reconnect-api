@@ -1,0 +1,59 @@
+# This section is intentionally left without certain parameters due to...
+# We will address these warnings later
+name: Deploy FastAPI to AWS EC2
+
+on:
+  pull_request:
+    types: [closed] # Run on PR close (merge or reject)
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write # Required for AWS authentication
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # This is replaced during CI/CD
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1 # Change to your desired region
+
+      - name: Pull Docker image
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+
+      - name: SSH into EC2 and deploy
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }} # Private key for SSH access
+        run: |
+          echo "$SSH_PRIVATE_KEY" > /tmp/ec2_key.pem
+          chmod 600 /tmp/ec2_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem ubuntu@ec2-3-82-206-23.compute-1.amazonaws.com << 'EOF'
+            # Stop the existing Docker container if it exists
+            if [ "$(docker ps -q -f name=fastapi-app)" ]; then
+              docker stop fastapi-app
+              docker rm fastapi-app
+            fi
+
+            # Run the new Docker container with env variables
+            docker run -d --name fastapi-app -p 8000:8000 \
+            -e DB_HOST="${{ secrets.DB_HOST }}" \
+            -e DB_USER="reconnect" \
+            -e DB_PASSWORD="${{secrets.DB_PASSWORD}}" \
+            -e DB_PORT="3306" \
+            -e ACCESS_TOKEN_EXPIRE_MINUTES=60 \
+            -e SECRET_KEY="${{secrets.SECRET_KEY}}" \
+            -e ALGORITHM=${{secrets.ALGORITHM}} \
+            ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+          EOF
