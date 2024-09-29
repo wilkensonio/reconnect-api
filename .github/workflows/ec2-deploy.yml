@@ -45,7 +45,7 @@ jobs:
             sudo usermod -aG docker $USER 
 
             # Refresh the group membership in the current session
-            newgrp docker << 'INNER_EOF'
+            newgrp docker  
 
             sudo systemctl restart docker 
 
