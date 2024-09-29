@@ -26,11 +26,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: set DATABASE_URL
+        run: echo "DATABASE_URL=sqlite:///./test.db" > $GITHUB_ENV
+
       - name: Run tests
-        run: pytest
+        run: pytest /tests
 
   build:
     runs-on: ubuntu-latest
+    needs: test # Wait for the test job to complete
 
     steps:
       - name: Check out code

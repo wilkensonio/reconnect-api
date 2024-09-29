@@ -2,7 +2,6 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from api.database import Base, get_db
-from api import crud, models
 from fastapi.testclient import TestClient
 from api.main import app
 
