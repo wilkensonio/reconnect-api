@@ -56,4 +56,5 @@ jobs:
             -e SECRET_KEY="${{secrets.SECRET_KEY}}" \
             -e ALGORITHM=${{secrets.ALGORITHM}} \
             ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+
           EOF
