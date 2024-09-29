@@ -38,7 +38,7 @@ jobs:
           echo "DB_PORT=3306" >> $GITHUB_ENV
 
       - name: Run tests
-        run: pytest /tests
+        run: pytest tests
 
   build:
     runs-on: ubuntu-latest
