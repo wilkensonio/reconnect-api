@@ -41,18 +41,21 @@ jobs:
 
           ssh -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem ubuntu@ec2-3-82-206-23.compute-1.amazonaws.com << 'EOF'
 
-            # Add current user to docker group
+            # Add current user to docker group if not already a member
             sudo usermod -aG docker $USER 
 
             # Refresh the group membership in the current session
             newgrp docker  
 
-            sudo systemctl restart docker 
-
             # Stop the existing Docker container if it exists
             if [ "$(docker ps -q -f name=fastapi-app)" ]; then
-              docker stop fastapi-app
-              docker rm fastapi-app
+              echo "Stopping existing container fastapi-app..."
+              docker stop fastapi-app || echo "Container fastapi-app not running."
+            fi
+
+            if [ "$(docker ps -aq -f name=fastapi-app)" ]; then
+              echo "Removing existing container fastapi-app..."
+              docker rm fastapi-app || echo "Failed to remove container fastapi-app."
             fi
 
             # Run the new Docker container with env variables
