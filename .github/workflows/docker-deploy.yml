@@ -1,4 +1,4 @@
-name: FastAPI CI/CD to AWS
+name: FastAPI tests and Docker deploy
 
 on:
   pull_request:
@@ -11,6 +11,24 @@ permissions:
   actions: write
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: pytest
+
   build:
     runs-on: ubuntu-latest
 
