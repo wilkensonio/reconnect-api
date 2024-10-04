@@ -18,32 +18,35 @@ router = APIRouter(prefix="/api/v1")
 
 
 @router.post("/verify-email/", response_model=dict)
-def send_email_verification(email: user_schema.EmailVerification):
+def send_email_verification(email: user_schema.EmailVerification) -> dict:
     """Verify email address using verification code
 
     Args:
-        code (str): email address
+
+        Email (str): email address
 
     Returns:
-        dict: Response message
+
+        dict: {"verification_code" : str}
     """
-    try:
-        email = email.email
-        code = mail_utils.verification(email)
-        print(code)
+
+    email = email.email
+    code = mail_utils.verification(email)
+
+    if code['verification_code']:
         return code
 
-    except Exception as e:
-        logging.error("Error sending verification code", e)
-        raise HTTPException(
-            status_code=400,
-            detail="An error occurred while attempting to send email verification code"
-        )
+    logging.error("Error sending verification code", exc_info=True)
+
+    raise HTTPException(
+        status_code=400,
+        detail="An error occurred while attempting to send email verification code"
+    )
 
 
 @router.post("/verify-email-code/")
 def verify_email_code(verify: user_schema.EmailVerificationCode):
-    """Verify email address using verification code
+    """Verify email address using verification code sent to the user
 
     Args:
 
@@ -53,7 +56,7 @@ def verify_email_code(verify: user_schema.EmailVerificationCode):
 
     Returns:
 
-        dict[str, bool]: "details" : bool
+        dict: {"details" : bool}
     """
 
     user_code, secret_code = verify.user_code, verify.secret_code
@@ -64,23 +67,22 @@ def verify_email_code(verify: user_schema.EmailVerificationCode):
 async def create_user(user: user_schema.UserCreate, db: Session = Depends(database.get_db)):
     """Create a new user
 
-    Attributes
-    ----------
-    user : user_schema.UserCreate
-        User details
-    db : Session
-        Database session
+    args:
 
-    Raises
-    ------
-    HTTPException
-        Email already registered
-        An error occurred while attempting to signup
+        user : user_schema.UserCreate
+               User details
 
-    Returns
-    -------
-    user_schema.UserResponse
-        User details
+
+    Raises:
+
+        HTTPException
+            Email already registered
+            An error occurred while attempting to signup
+
+    Returns:
+
+        user_schema.UserResponse
+            User details
 
     """
     return crud.create_user(db=db, user=user)
@@ -91,26 +93,26 @@ async def login_user(
     login_request: user_schema.LoginRequest,
     db: Session = Depends(database.get_db),
 ):
-    """Login a user
+    """Login a user by email and password
 
     Attributes
     ----------
-    login_request : user_schema.LoginRequest
-        User login details
-    db : Session
-        Database session
+        login_request : user_schema.LoginRequest
+            User login details
+        db : Session
+            Database session
 
     Raises
     ------
-    HTTPException
-        code : 400
-        User not found
-        Invalid email or password
+        HTTPException
+            code : 400
+            User not found
+            Invalid email or password
 
     Returns
     -------
-    user_schema.TokenResponse
-        User details with access token 
+        user_schema.TokenResponse
+            User details with access token 
     """
 
     user = crud.get_user_by_email(db, email=login_request.email)
@@ -146,23 +148,18 @@ async def login_user(
 
 @router.get("/users/", response_model=list[user_schema.UserResponse])
 async def get_users(db: Session = Depends(database.get_db)):
-    """Retrieve all users.
-
-    Attributes
-    ----------
-    db : Session
-        Database session
+    """Retrieve all users. 
 
     Raises
     ------
-    HTTPException
-        code : 400
-        An error occurred while attempting to retrieve users
+        HTTPException
+            code : 400
+            An error occurred while attempting to retrieve users
 
     Returns
     -------
-    list[user_schema.UserResponse]
-        List of all users"""
+        list[user_schema.UserResponse]
+            List of all users"""
 
     try:
         users = crud.get_users(db)
@@ -180,23 +177,21 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by email.
 
     Attributes
-    ----------
+    ---------- 
+        email : str
+            User email
 
-    email : str
-        User email
-    db : Session
-        Database session
 
     Raises
     ------
-    HTTPException
-        code : 400
-        User not found
+        HTTPException
+            code : 400
+            User not found
 
     Returns
     -------
-    user_schema.UserResponse
-        User details"""
+        user_schema.UserResponse
+            User details"""
     try:
         user = crud.get_user_by_email(db, email)
         return user
@@ -213,23 +208,21 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by id.
 
     Attributes
-    ----------
+    ---------- 
+        user_id : str
+            User id
 
-    user_id : str
-        User id
-    db : Session
-        Database session
 
     Raises
     ------
-    HTTPException
-        code : 404
-        User not found
+        HTTPException
+            code : 404
+            User not found
 
     Returns
     -------
-    user_schema.UserResponse
-        User details"""
+        user_schema.UserResponse
+            User details"""
 
     user = crud.get_user_by_id(db, user_id)
     return user
@@ -242,27 +235,25 @@ def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_d
     Attributes
     ----------
         email_or_id : str
-            User email or user_id
-        db : Session
-            Database session
+            User email or user_id 
 
     Raises
     ------
-    HTTPException
-        code : 400
-        User not found
-        An error occurred while attempting to delete user
+        HTTPException
+            code : 400
+            User not found
+            An error occurred while attempting to delete user
 
     Returns
     -------
-    dict
-        Response message
+        dict: {"details" : str}
+
          """
     try:
         if crud.delete_user(db, email=email_or_id):
-            return {"message": "User deleted successfully"}
+            return {"details": "User deleted successfully"}
         elif crud.delete_user(db, user_id=email_or_id):
-            return {"message": "User deleted successfully"}
+            return {"details": "User deleted successfully"}
         else:
             raise HTTPException(
                 status_code=400,
