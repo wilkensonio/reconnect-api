@@ -3,7 +3,7 @@ import os
 import logging
 from .. import crud, database
 from ..schemas import user_schema
-from api import jwt_utils
+from api import jwt_utils, mail_utils
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -15,6 +15,49 @@ EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
 router = APIRouter(prefix="/api/v1")
+
+
+@router.post("/verify-email/", response_model=dict)
+def send_email_verification(email: user_schema.EmailVerification):
+    """Verify email address using verification code
+
+    Args:
+        code (str): email address
+
+    Returns:
+        dict: Response message
+    """
+    try:
+        email = email.email
+        code = mail_utils.verification(email)
+        print(code)
+        return code
+
+    except Exception as e:
+        logging.error("Error sending verification code", e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to send email verification code"
+        )
+
+
+@router.post("/verify-email-code/")
+def verify_email_code(verify: user_schema.EmailVerificationCode):
+    """Verify email address using verification code
+
+    Args:
+
+        user_code (str): code entered by the user
+
+        secret_code (str): Verification code
+
+    Returns:
+
+        dict[str, bool]: "details" : bool
+    """
+
+    user_code, secret_code = verify.user_code, verify.secret_code
+    return mail_utils.verify_email_code(user_code, secret_code)
 
 
 @router.post("/signup/", response_model=user_schema.UserResponse)
