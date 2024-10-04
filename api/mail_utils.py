@@ -2,7 +2,6 @@ import os
 import logging
 import random
 import string
-import base64
 
 from mailjet_rest import Client
 from dotenv import load_dotenv
@@ -48,8 +47,8 @@ def _send_email(email: str, subject: str, message: str) -> bool:
                     {"Email": email}
                 ],
                 'Subject': subject,
-                'TextPart': message,  # Make sure this is populated
-                'HtmlPart': f'{message}</h3>'
+                'TextPart': message,
+                'HtmlPart': f'<p>{message}</p>'
             }
         ]
     }
@@ -59,10 +58,11 @@ def _send_email(email: str, subject: str, message: str) -> bool:
 
         # Check the response status
         if result.status_code == 200:
+            print("Email sent successfully.")
             return True
         else:
-            logging.error(f"Failed to send email: {
-                result.status_code}, {result.json()})")
+            print(f"Failed to send email: {
+                  result.status_code}, {result.json()})")
             return False
 
     except Exception as e:
