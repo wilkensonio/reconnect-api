@@ -231,3 +231,35 @@ def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_d
             status_code=400,
             detail="An error occurred while attempting to delete user"
         )
+
+
+# Kiosk sign-in
+
+@router.post("/kiosk-signin/", response_model=user_schema.TokenResponse)
+async def kiosk_login(
+    login_request: user_schema.KioskLoginRequest,
+    db: Session = Depends(database.get_db),
+):
+    """Login a user via kiosk (using last 4 digits of ID or full barcode)"""
+    user = crud.get_student_by_id(db, login_request.user_id)
+    print(user)
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="User not found"
+        )
+
+    #  create access token (JWT) for the user
+    access_token_expires = timedelta(minutes=int(EXPRIRES_MINUTES))
+    access_token = jwt_utils.create_access_token(
+        data={'sub': user.email}, expires_delta=access_token_expires
+    )
+
+    return user_schema.TokenResponse(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        access_token=access_token,
+        token_type="bearer"
+    )

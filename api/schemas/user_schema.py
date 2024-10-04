@@ -79,3 +79,9 @@ class TokenResponse(BaseModel):
 class GetUsersResponse(BaseModel):
     """Response model for getting all users"""
     users: list[UserResponse]
+
+
+# kiosk schema
+class KioskLoginRequest (BaseModel):
+    """Request model for logging in a kiosk"""
+    user_id: str

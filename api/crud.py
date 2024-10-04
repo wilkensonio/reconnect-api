@@ -126,3 +126,27 @@ def delete_user(db: Session, user_id: Optional[str] = None, email: Optional[str]
 
 
 # end of user (faculty) crud operations
+
+# start of student crud operations
+def get_student_by_id(db: Session, student_id: str):
+    """Get a user by last 4 digits of  their id (HootLoot ID) or full ID
+
+    Args:
+
+        user_id (str): Last 4 digits or full ID
+
+    Returns:
+
+        Object: User details    
+    """
+
+    if len(student_id) == 4:
+        # Query to check if the last 4 digits match the given ID
+        existing_user = db.query(models.Student).filter(
+            models.Student.student_id.like(f"%{student_id}")
+        ).first()
+    else:
+        existing_user = db.query(models.Student).filter(
+            models.Student.student_id == student_id).first()
+
+    return existing_user
