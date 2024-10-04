@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/v1")
 
 @router.post("/verify-email/", response_model=dict)
 def send_email_verification(email: user_schema.EmailVerification) -> dict:
-    """Verify email address using verification code
+    """Verify email address using verification code (sent to the user) 6 characters long
 
     Args:
 
