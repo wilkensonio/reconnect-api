@@ -59,6 +59,8 @@ def _send_email(email: str, subject: str, message: str) -> bool:
         # Check the response status
         if result.status_code == 200:
             print("Email sent successfully.")
+            logging.info(f"Email sent to {os.getenv('SENDER_EMAIL')}")
+            logging.info(f"Email sent to {email}")
             return True
         else:
             print(f"Failed to send email: {
