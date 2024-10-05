@@ -17,10 +17,6 @@ RUN ls -la /app
 # Install the application's dependencies.
 RUN  pip install --no-cache-dir -r requirements.txt
 
-EXPOSE 8000 
+EXPOSE 8000  
 
-# Expose the port that the application listens on.
-EXPOSE 8000
-
-# Run the application.
 CMD python3 -m uvicorn api.main:app --host=0.0.0.0 --port=8000
