@@ -12,11 +12,12 @@ if production:
     DB_NAME = os.getenv("DB_NAME")
     DB_PORT = os.getenv("DB_PORT")
 else:
-    DB_HOST = os.getenv("LOCAL_DB_HOST")
-    DB_USER = os.getenv("LOCAL_DB_USER")
-    DB_PASSWORD = os.getenv("LOCAL_DB_PASSWORD")
+    DB_HOST = 'localhost'
+    DB_USER = 'root'
+    DB_PASSWORD = 'rootroot'
     DB_NAME = os.getenv("DB_NAME")
     DB_PORT = os.getenv("DB_PORT")
+    # DEVELOPMENT
 
 
 DATABASE_URL = f"mysql+pymysql://{DB_USER}:{
