@@ -3,7 +3,8 @@ import os
 import logging
 from .. import crud, database
 from ..schemas import user_schema
-from api import jwt_utils, mail_utils
+from api import jwt_utils
+from api.mail_utils import EmailVerification
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -15,6 +16,9 @@ EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
 router = APIRouter(prefix="/api/v1")
+
+verifier = EmailVerification()
+user_crud = crud.UserCrud()
 
 
 @router.post("/verify-email/", response_model=dict)
@@ -31,8 +35,8 @@ def send_email_verification(email: user_schema.EmailVerification) -> dict:
     """
 
     email = email.email
-    code = mail_utils.verification(email)
-
+    code = verifier.verification(email)
+    print(code)
     if code['verification_code']:
         return code
 
@@ -56,11 +60,11 @@ def verify_email_code(verify: user_schema.EmailVerificationCode):
 
     Returns:
 
-        dict: {"details" : bool}
+        dict: {"detail" : bool}
     """
 
     user_code, secret_code = verify.user_code, verify.secret_code
-    return mail_utils.verify_email_code(user_code, secret_code)
+    return verifier.verify_email_code(user_code, secret_code)
 
 
 @router.post("/signup/", response_model=user_schema.UserResponse)
@@ -70,7 +74,7 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
     args:
 
         user : user_schema.UserCreate
-               User details
+            User detail
 
 
     Raises:
@@ -82,10 +86,10 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
     Returns:
 
         user_schema.UserResponse
-            User details
+            User detail
 
     """
-    return crud.create_user(db=db, user=user)
+    return user_crud.create_user(db=db, user=user)
 
 
 @router.post("/signin/", response_model=user_schema.TokenResponse)
@@ -98,7 +102,7 @@ async def login_user(
     Attributes
     ----------
         login_request : user_schema.LoginRequest
-            User login details
+            User login detail
         db : Session
             Database session
 
@@ -112,10 +116,10 @@ async def login_user(
     Returns
     -------
         user_schema.TokenResponse
-            User details with access token 
+            User detail with access token 
     """
 
-    user = crud.get_user_by_email(db, email=login_request.email)
+    user = user_crud.get_user_by_email(db, email=login_request.email)
 
     if not user:
         raise HTTPException(
@@ -162,7 +166,7 @@ async def get_users(db: Session = Depends(database.get_db)):
             List of all users"""
 
     try:
-        users = crud.get_users(db)
+        users = user_crud.get_users(db)
         return users
     except Exception as e:
         logging.error(e)
@@ -191,9 +195,9 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     Returns
     -------
         user_schema.UserResponse
-            User details"""
+            User detail"""
     try:
-        user = crud.get_user_by_email(db, email)
+        user = user_crud.get_user_by_email(db, email)
         return user
     except Exception as e:
         logging.error(e)
@@ -222,9 +226,9 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
     Returns
     -------
         user_schema.UserResponse
-            User details"""
+            User detail"""
 
-    user = crud.get_user_by_id(db, user_id)
+    user = user_crud.get_user_by_id(db, user_id)
     return user
 
 
@@ -246,14 +250,14 @@ def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_d
 
     Returns
     -------
-        dict: {"details" : str}
+        dict: {"detail" : str}
 
-         """
+        """
     try:
-        if crud.delete_user(db, email=email_or_id):
-            return {"details": "User deleted successfully"}
-        elif crud.delete_user(db, user_id=email_or_id):
-            return {"details": "User deleted successfully"}
+        if user_crud.delete_user(db, email=email_or_id):
+            return {"detail": "User deleted successfully"}
+        elif user_crud.delete_user(db, user_id=email_or_id):
+            return {"detail": "User deleted successfully"}
         else:
             raise HTTPException(
                 status_code=400,
