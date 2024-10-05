@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY . /app 
 
+COPY ./api/mail_utils.py /app/api/mail_utils.py
+
 COPY . .
 
 RUN ls -la /app
