@@ -19,7 +19,6 @@ class EmailVerification:
     """Handle sending and verification of email codes."""
 
     def __init__(self):
-
         self.SMTP_SERVER = os.getenv("SMTP_SERVER")
         self.SMTP_PORT = os.getenv("SMTP_PORT")
         self.SENDER_EMAIL = os.getenv("SENDER_EMAIL")
