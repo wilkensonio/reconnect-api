@@ -12,6 +12,8 @@ WORKDIR /app
 
 COPY . /app 
 
+COPY . .
+
 RUN ls -la /app
 
 # Install the application's dependencies.
