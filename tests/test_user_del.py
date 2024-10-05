@@ -15,7 +15,7 @@ def test_del_user(client):
     #  Delete user by email
     response = client.delete("/api/v1/user/delete/john.doe@example.com")
     assert response.status_code == 200
-    assert response.json() == {"message": "User deleted successfully"}
+    assert response.json() == {"detail": "User deleted successfully"}
 
     response = client.post("/api/v1/signup/", json=user_data)
     assert response.status_code == 200
@@ -24,7 +24,7 @@ def test_del_user(client):
     # Delete user by user_id
     response = client.delete("/api/v1/user/delete/70573536")
     assert response.status_code == 200
-    assert response.json() == {"message": "User deleted successfully"}
+    assert response.json() == {"detail": "User deleted successfully"}
 
     response = client.post("/api/v1/signup/", json=user_data)
     assert response.status_code == 200

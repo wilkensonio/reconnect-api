@@ -79,3 +79,14 @@ class TokenResponse(BaseModel):
 class GetUsersResponse(BaseModel):
     """Response model for getting all users"""
     users: list[UserResponse]
+
+
+class EmailVerification(BaseModel):
+    """Request model for email verification"""
+    email: EmailStr
+
+
+class EmailVerificationCode(BaseModel):
+    """Response model for email verification"""
+    user_code: str
+    secret_code: str

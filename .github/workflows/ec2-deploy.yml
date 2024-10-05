@@ -60,6 +60,12 @@ jobs:
 
             # Run the new Docker container with env variables
             docker run -d --name fastapi-app -p 8000:8000 \
+            -e ROOT_EMAIL="${{ secrets.ROOT_EMAIL }}" \
+            -e ROOT_PASSWORD="${{ secrets.ROOT_PASSWORD }}" \
+            -e SENDER_PASSWORD="${{ secrets.SENDER_PASSWORD }}" \
+            -e SENDER_EMAIL="${{ secrets.SENDER_EMAIL }}" \
+            -e SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+            -e SMTP_SERVER="${{ secrets.SMTP_SERVER }}" \
             -e DB_HOST="${{ secrets.DB_HOST }}" \
             -e DB_USER="reconnect" \
             -e DB_NAME="reconnect" \
