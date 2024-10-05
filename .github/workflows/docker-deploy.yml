@@ -13,7 +13,19 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    services:
+      mysql:
+        image: mysql:latest
+        env:
+          MYSQL_DATABASE: reconnect
+          MYSQL_ROOT_PASSWORD: rootroot
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Check out code
         uses: actions/checkout@v3
