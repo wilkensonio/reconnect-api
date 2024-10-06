@@ -18,8 +18,13 @@ COPY . .
 
 RUN ls -la /app
 
+RUN ls -la /app/api
+
+
 # Install the application's dependencies.
 RUN  pip install --no-cache-dir -r requirements.txt
+
+
 
 EXPOSE 8000  
 
