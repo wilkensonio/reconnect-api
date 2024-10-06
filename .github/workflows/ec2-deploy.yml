@@ -50,13 +50,19 @@ jobs:
             # Stop the existing Docker container if it exists
             if [ "$(docker ps -q -f name=fastapi-app)" ]; then
               echo "Stopping existing container fastapi-app..."
-              docker stop fastapi-app || echo "Container fastapi-app not running."
-            fi
-
-            if [ "$(docker ps -aq -f name=fastapi-app)" ]; then
-              echo "Removing existing container fastapi-app..."
+              docker stop fastapi-app || echo "Failed to stop container fastapi-app."
               docker rm fastapi-app || echo "Failed to remove container fastapi-app."
             fi
+
+            # Pull latest image and prune older ones
+            echo "Pulling latest Docker image..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+
+            echo "Removing older Docker images..."
+            docker image prune -f
+
+            # Restart Docker service to clear any issues
+            sudo systemctl restart docker
 
             # Run the new Docker container with env variables
             docker run -d --name fastapi-app -p 8000:8000 \
@@ -75,5 +81,9 @@ jobs:
             -e SECRET_KEY="${{secrets.SECRET_KEY}}" \
             -e ALGORITHM=${{secrets.ALGORITHM}} \
             ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+
+            # Check logs for verification
+            echo "Checking logs for the new container..."
+            docker logs fastapi-ap
 
           EOF
