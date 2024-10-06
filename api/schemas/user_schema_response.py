@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import Field, EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel
 
 
 class CreateStudentResponse(BaseModel):
