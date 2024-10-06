@@ -3,7 +3,7 @@
 venv/
 *venv/
 logs 
- 
+.env
 .pytest_cache
 *.log
 npm-debug.log*

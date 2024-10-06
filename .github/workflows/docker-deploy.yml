@@ -82,7 +82,12 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+        run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest --no-cache
+
+      - name: List all files in Docker image
+        run: |
+          docker run --rm ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest ls -R / > file_list.txt
+          cat file_list.txt
 
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
