@@ -84,6 +84,6 @@ jobs:
 
             # Check logs for verification
             echo "Checking logs for the new container..."
-            docker logs fastapi-ap
+            docker logs fastapi-app
 
           EOF
