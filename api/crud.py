@@ -5,6 +5,7 @@ from . import models
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
+import logging
 
 
 # start of user (faculty) crud operations
@@ -41,17 +42,7 @@ class UserCrud:
                 detail="An error occurred while attempting to signup"
             )
 
-        response = user_schema.UserResponse(
-            id=new_user.id,
-            user_id=new_user.user_id,
-            first_name=new_user.first_name,
-            last_name=new_user.last_name,
-            email=new_user.email,
-            phone_number=new_user.phone_number,
-            created_at=new_user.created_at
-        )
-
-        return response
+        return new_user
 
     @staticmethod
     def get_user_by_email(db: Session, email: str):
@@ -125,3 +116,88 @@ class UserCrud:
             return True
 
         return False
+
+    # start of student crud operations
+    @staticmethod
+    def get_student_by_id(db: Session, student_id: str):
+        """Get a user by last 4 digits of  their id (HootLoot ID) or full ID
+
+        Args:
+
+            user_id (str): Last 4 digits or full ID or full ID of the student
+
+        Returns:
+
+            Object: User details    
+        """
+
+        if len(student_id) == 4:
+            # Query to check if the last 4 digits match the given ID
+            existing_user = db.query(models.Student).filter(
+                models.Student.student_id.like(f"%{student_id}")
+            ).first()
+        else:
+            existing_user = db.query(models.Student).filter(
+                models.Student.student_id == student_id).first()
+
+        return existing_user
+
+    @staticmethod
+    def get_students(db: Session):
+        """Get all students
+
+        Args:
+            db (Session): Database session
+
+        Returns:
+            List[Student]: List of all students"""
+
+        return db.query(models.Student).all()
+
+    @staticmethod
+    def get_student_by_email(db: Session, email: str):
+        """Get a student by email
+
+        Args:
+            db (Session): Database session
+            email (str): Student email
+
+        Returns:
+            Student: Student details"""
+
+        existing_student = db.query(models.Student).filter(
+            models.Student.email == email).first()
+
+        return existing_student
+
+    @staticmethod
+    def create_student(db: Session, student: user_schema.StudentCreate):
+        """Create a new student
+
+        Args:
+            db (Session): Database session
+            student (faculty_schema.StudentCreate): Student details
+
+        return: user_schema.StudentResponse: Student details"""
+
+        try:
+            existing_student = db.query(models.Student).filter(
+                models.Student.email == student.email).first()
+
+            new_student = models.Student(**student.model_dump())
+            db.add(new_student)
+            db.commit()
+            db.refresh(new_student)
+
+        except Exception as e:
+            if existing_student:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Email already registered"
+                )
+            raise HTTPException(
+                status_code=400,
+                detail=f"An error occurred while attempting to signup {e}"
+            )
+
+        return new_student

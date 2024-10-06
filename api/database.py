@@ -12,6 +12,7 @@ if production:
     DB_NAME = os.getenv("DB_NAME")
     DB_PORT = os.getenv("DB_PORT")
 else:
+    print("Using development database")
     DB_HOST = 'localhost'
     DB_USER = 'root'
     DB_PASSWORD = 'rootroot'

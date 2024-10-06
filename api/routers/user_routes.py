@@ -2,7 +2,7 @@
 import os
 import logging
 from .. import crud, database
-from ..schemas import user_schema
+from ..schemas import user_schema, user_schema_response
 from api import jwt_utils
 from api.mail_utils import EmailVerification
 from fastapi import APIRouter, Depends, Body, HTTPException
@@ -15,7 +15,7 @@ load_dotenv()
 EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 verifier = EmailVerification()
 user_crud = crud.UserCrud()
@@ -67,7 +67,7 @@ def verify_email_code(verify: user_schema.EmailVerificationCode):
     return verifier.verify_email_code(user_code, secret_code)
 
 
-@router.post("/signup/", response_model=user_schema.UserResponse)
+@router.post("/signup/", response_model=user_schema_response.UserResponse)
 async def create_user(user: user_schema.UserCreate, db: Session = Depends(database.get_db)):
     """Create a new user
 
@@ -80,8 +80,14 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
     Raises:
 
         HTTPException
+            code : 400
             Email already registered
             An error occurred while attempting to signup
+
+        HTTPException
+            code : 400
+            Invalid southern email address
+
 
     Returns:
 
@@ -89,10 +95,26 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
             User detail
 
     """
-    return user_crud.create_user(db=db, user=user)
+    if not user.email.endswith("@southernct.edu"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid southern email address"
+        )
+
+    new_user = user_crud.create_user(db=db, user=user)
+
+    return user_schema_response.UserResponse(
+        id=new_user.id,
+        user_id=new_user.user_id,
+        first_name=new_user.first_name,
+        last_name=new_user.last_name,
+        email=new_user.email,
+        phone_number=new_user.phone_number,
+        created_at=new_user.created_at
+    )
 
 
-@router.post("/signin/", response_model=user_schema.TokenResponse)
+@router.post("/signin/", response_model=user_schema_response.TokenResponse)
 async def login_user(
     login_request: user_schema.LoginRequest,
     db: Session = Depends(database.get_db),
@@ -139,10 +161,11 @@ async def login_user(
         data={'sub': user.email}, expires_delta=access_token_expires
     )
 
-    response = user_schema.TokenResponse(
+    response = user_schema_response.TokenResponse(
         id=user.id,
         first_name=user.first_name,
         last_name=user.last_name,
+        email=user.email,
         access_token=access_token,
         token_type="bearer"
     )
@@ -150,7 +173,93 @@ async def login_user(
     return response
 
 
-@router.get("/users/", response_model=list[user_schema.UserResponse])
+@router.post("/signup-student/", response_model=user_schema_response.CreateStudentResponse)
+async def create_student_user(
+    student: user_schema.StudentCreate,
+    db: Session = Depends(database.get_db),
+):
+    """Create a new student user
+
+    Args:
+
+        user : user_schema.StudentCreate
+            Student detail
+
+    Raises:
+
+        HTTPException
+            Email already registered
+            An error occurred while attempting to signup
+
+    Returns:
+
+        user_schema.UserResponse
+            Student detail"""
+
+    if not student.email.endswith("@southernct.com"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid southern email address"
+        )
+
+    student = user_crud.create_student(db=db, student=student)
+
+    return user_schema_response.CreateStudentResponse(
+        id=student.id,
+        student_id=student.student_id,
+        first_name=student.first_name,
+        last_name=student.last_name,
+        email=student.email,
+        phone_number=student.phone_number,
+    )
+
+
+@router.post("/kiosk-signin/", response_model=user_schema_response.TokenResponse)
+async def kiosk_login(
+    login_request: user_schema.KioskLoginRequest,
+    db: Session = Depends(database.get_db),
+):
+    """Login a user via kiosk (using last 4 digits of ID or full barcode)
+    args:
+
+        user_id (str) : student full ID or last 4 digits of ID (hootloot)
+
+    Raises:
+
+            HTTPException
+                code : 400
+                User not found
+                Invalid southern email address
+
+    Returns: 
+
+        user_schema.TokenResponse
+    """
+    user = user_crud.get_student_by_id(db, login_request.user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="No User exists with the provided ID"
+        )
+
+    #  create access token (JWT) for the user
+    access_token_expires = timedelta(minutes=int(EXPRIRES_MINUTES))
+    access_token = jwt_utils.create_access_token(
+        data={'sub': user.email}, expires_delta=access_token_expires
+    )
+
+    return user_schema_response.TokenResponse(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        access_token=access_token,
+        token_type="bearer"
+    )
+
+
+@router.get("/users/", response_model=list[user_schema_response.UserResponse])
 async def get_users(db: Session = Depends(database.get_db)):
     """Retrieve all users. 
 
@@ -176,7 +285,7 @@ async def get_users(db: Session = Depends(database.get_db)):
         )
 
 
-@router.get("/user/email/{email}", response_model=user_schema.UserResponse)
+@router.get("/user/email/{email}", response_model=user_schema_response.UserResponse)
 async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by email.
 
@@ -207,7 +316,7 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
         )
 
 
-@router.get("/user/id/{user_id}", response_model=user_schema.UserResponse)
+@router.get("/user/id/{user_id}", response_model=user_schema_response.UserResponse)
 def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by id.
 
@@ -230,6 +339,24 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
 
     user = user_crud.get_user_by_id(db, user_id)
     return user
+
+
+@router.get("/students/", response_model=list[user_schema_response.Get_StudentResponse])
+def get_students(db: Session = Depends(database.get_db)):
+    """Get all students 
+
+
+    Returns:
+
+        List[Student]: List of all students
+    """
+    student = user_crud.get_students(db)
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="No student found"
+        )
+    return student
 
 
 @router.delete("/user/delete/{email_or_id}", response_model=dict)
