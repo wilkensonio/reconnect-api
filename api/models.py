@@ -39,7 +39,10 @@ class User(Base):
 
 
 class Student(Base):
-    """Student model"""
+    """Student model
+
+    student_id as foreign key in the appointment model
+    log model and note model"""
 
     __tablename__ = "student"
 
@@ -48,9 +51,7 @@ class Student(Base):
     first_name = Column(String(255), nullable=False)
     last_name = Column(String(255), nullable=False)
     email = Column(String(255), index=True, nullable=False, unique=True)
-    password = Column(String(255), nullable=False)
     phone_number = Column(String(50), index=True, unique=True, nullable=True)
-    user_id = Column(String(255), ForeignKey('faculty.user_id'))
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -63,7 +64,8 @@ class Persmission(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     permission_type = Column(String(255), nullable=False,
                              unique=True, default="user")
-    user_id = Column(String(255), ForeignKey('faculty.user_id'))
+    user_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete="CASCADE", name="fk_user_permission"))
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -102,8 +104,10 @@ class Log(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     action = Column(String(255), nullable=False)
-    user_id = Column(String(255), ForeignKey('faculty.user_id'))
-    Student_id = Column(String(255), ForeignKey('student.student_id'))
+    user_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete='CASCADE', name='fk_user_log'))
+    Student_id = Column(String(255), ForeignKey(
+        'student.student_id', ondelete='CASCADE', name='fk_student_log'))
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -115,8 +119,10 @@ class Note(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     notes = Column(String(255), nullable=False)
-    user_id = Column(String(255), ForeignKey('faculty.user_id'))
-    Student_id = Column(String(255), ForeignKey('student.student_id'))
+    user_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete="CASCADE", name="fk_user_note"))
+    Student_id = Column(String(255), ForeignKey(
+        'student.student_id', ondelete="CASCADE", name="fk_student_note"))
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -127,7 +133,8 @@ class Backlsit(Base):
     __tablename__ = "blacklist"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String(255), nullable=False)
+    user_id = Column(String(255), ForeignKey(
+        'faculty.id', ondelete='CASCADE', name='user_blacklist'), nullable=False)
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -141,7 +148,8 @@ class Available(Base):
     day = Column(String(15), nullable=False)
     start_time = Column(String(15), nullable=False)
     end_time = Column(String(15), nullable=False)
-    user_id = Column((String(255)), ForeignKey('faculty.user_id'))
+    user_id = Column((String(255)), ForeignKey(
+        'faculty.user_id', ondelete='CASCADE', name='user_available'), nullable=False)
     created_at = Column(
         String(50), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
@@ -156,8 +164,10 @@ class Appointment(Base):
     start_time = Column(String(15), nullable=False)
     end_time = Column(String(15), nullable=False)
     satus = Column(String(50), nullable=False, default="pending")
-    student_id = Column(String(255), ForeignKey('student.student_id'))
-    faculty_id = Column(String(255), ForeignKey('faculty.user_id'))
+    student_id = Column(String(255), ForeignKey(
+        'student.student_id', ondelete='CASCADE', name='student_appointment'), nullable=False)
+    faculty_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete='CASCADE', name='faculty_appointment'), nullable=False)
     updated_at = Column(
         String(50), default=lambda: datetime.now().strftime("%B %d, %Y"))
     created_at = Column(

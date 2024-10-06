@@ -17,4 +17,4 @@ app.add_middleware(
 
 models.Base.metadata.create_all(bind=database.engine)
 
-app.include_router(user_routes.router)
+app.include_router(user_routes.router, prefix="/api/v1")
