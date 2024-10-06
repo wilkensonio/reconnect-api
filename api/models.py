@@ -134,7 +134,7 @@ class Backlsit(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String(255), ForeignKey(
-        'faculty.id', ondelete='CASCADE', name='user_blacklist'), nullable=False)
+        'faculty.user_id', ondelete='CASCADE', name='user_blacklist'), nullable=False)
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
