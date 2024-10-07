@@ -2,6 +2,7 @@ import bcrypt
 import os
 from dotenv import load_dotenv
 from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from api.database import Base
 from datetime import datetime
 from passlib.context import CryptContext
@@ -36,6 +37,8 @@ class User(Base):
 
     def check_password(self, password: str) -> bool:
         return self.pwd_context.verify(password, self.password)
+
+    availabilities = relationship("Available", back_populates="faculty")
 
 
 class Student(Base):
@@ -152,6 +155,7 @@ class Available(Base):
         'faculty.user_id', ondelete='CASCADE', name='user_available'), nullable=False)
     created_at = Column(
         String(50), default=lambda: datetime.now().strftime("%B %d, %Y"))
+    faculty = relationship("User", back_populates="availabilities")
 
 
 class Appointment(Base):

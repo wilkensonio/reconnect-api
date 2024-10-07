@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from . import models, database
-from .routers import user_routes
+from .routers import user_routes, available_routes
+
 
 app = FastAPI()
 
@@ -18,3 +19,4 @@ app.add_middleware(
 models.Base.metadata.create_all(bind=database.engine)
 
 app.include_router(user_routes.router, prefix="/api/v1")
+app.include_router(available_routes.router, prefix="/api/v1")

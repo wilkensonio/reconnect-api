@@ -1,7 +1,7 @@
 # Description: API routes for the application
 import os
 import logging
-from .. import crud, database
+from .. import crud_user, database
 from ..schemas import user_schema, user_schema_response
 from api import jwt_utils
 from api.mail_utils import EmailVerification
@@ -18,7 +18,7 @@ EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 router = APIRouter()
 
 verifier = EmailVerification()
-user_crud = crud.UserCrud()
+user_crud = crud_user.UserCrud()
 
 
 @router.post("/verify-email/", response_model=dict)

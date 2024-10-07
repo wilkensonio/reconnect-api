@@ -5,7 +5,6 @@ from . import models
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional
-import logging
 
 
 # start of user (faculty) crud operations
