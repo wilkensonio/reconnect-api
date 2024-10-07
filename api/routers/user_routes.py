@@ -196,7 +196,7 @@ async def create_student_user(
         user_schema.UserResponse
             Student detail"""
 
-    if not student.email.endswith("@southernct.com"):
+    if not student.email.endswith("@southernct.edu"):
         raise HTTPException(
             status_code=400,
             detail="Invalid southern email address"
@@ -228,8 +228,8 @@ async def kiosk_login(
 
             HTTPException
                 code : 400
-                User not found
-                Invalid southern email address
+                No User exists with the provided ID
+
 
     Returns: 
 
