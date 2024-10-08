@@ -4,6 +4,7 @@ venv/
 *venv/
 logs 
 .env
+.bash_env
 .pytest_cache
 *.log
 npm-debug.log*

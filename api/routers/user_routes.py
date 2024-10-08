@@ -140,6 +140,11 @@ async def login_user(
         user_schema.TokenResponse
             User detail with access token 
     """
+    if not login_request.email.endswith("@southernct.edu"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid southern email address"
+        )
 
     user = user_crud.get_user_by_email(db, email=login_request.email)
 
