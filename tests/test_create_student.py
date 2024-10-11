@@ -3,10 +3,9 @@ def test_create_student(client):
         "student_id": "705735368",
         "first_name": "John",
         "last_name": "Doe",
-        "email": "john.doe@southernct.com",
+        "email": "john.doe@southernct.edu",
         "phone_number": "1234567890"
     }
-
     response = client.post("/api/v1/signup-student/", json=student_data)
     assert response.status_code == 200, f"Expected 200 but got {
         response.status_code}: {response.json()}"

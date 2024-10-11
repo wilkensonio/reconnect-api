@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import EmailStr, BaseModel
+from pydantic import EmailStr, BaseModel, field_validator
 
 
 class CreateStudentResponse(BaseModel):
@@ -61,4 +61,49 @@ class GetUsersResponse(BaseModel):
     """Response model for getting all users"""
     users: list[UserResponse]
 
-# Email verification schema
+
+class AvailableResponse(BaseModel):
+    day: str
+    start_time: str
+    end_time: str
+
+    @field_validator('start_time', 'end_time')
+    def strip_seconds(cls, value):
+        # Convert time from "HH:MM:SS" to "HH:MM"
+        if isinstance(value, str) and len(value.split(':')) == 3:
+            return value[:-3]
+        return value
+
+
+class CreateAppointmentResponse(BaseModel):
+    id: int
+    student_id: str
+    faculty_id: str
+    date: str
+    start_time: str
+    end_time: str
+    reason: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
+
+
+class GetAppointmentByIdResponse(BaseModel):
+    id: int
+    student_id: str
+    faculty_id: str
+    date: str
+    start_time: str
+    end_time: str
+    reason: str
+    created_at: str
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }

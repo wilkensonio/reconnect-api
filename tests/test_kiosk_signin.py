@@ -3,7 +3,7 @@ def test_kiosk_signin(client):
         "student_id": "705735368",
         "first_name": "John",
         "last_name": "Doe",
-        "email": "john.doe@southernct.com",
+        "email": "john.doe@southernct.edu",
         "phone_number": "1234567890"
     }
 

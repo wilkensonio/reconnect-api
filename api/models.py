@@ -168,6 +168,7 @@ class Appointment(Base):
     start_time = Column(String(15), nullable=False)
     end_time = Column(String(15), nullable=False)
     satus = Column(String(50), nullable=False, default="pending")
+    reason = Column(String(255), nullable=False)
     student_id = Column(String(255), ForeignKey(
         'student.student_id', ondelete='CASCADE', name='student_appointment'), nullable=False)
     faculty_id = Column(String(255), ForeignKey(
@@ -176,3 +177,10 @@ class Appointment(Base):
         String(50), default=lambda: datetime.now().strftime("%B %d, %Y"))
     created_at = Column(
         String(50), default=lambda: datetime.now().strftime("%B %d, %Y"))
+
+
+class Secret(Base):
+    __tablename__ = "secret"
+
+    key_id = Column(String(250), primary_key=True)
+    api_secret_key = Column(String(1000), nullable=False)

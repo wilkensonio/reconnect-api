@@ -11,8 +11,7 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 COPY . /app 
-COPY . .env
-COPY ./api/mail_utils.py /app/api/mail_utils.py
+COPY . .env 
 
 COPY . .
 

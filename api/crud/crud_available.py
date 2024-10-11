@@ -1,5 +1,5 @@
-from .schemas import available_schema
-from . import models
+from ..schemas import available_schema
+from .. import models
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional

@@ -1,6 +1,6 @@
 from datetime import datetime
 from pydantic import Field, EmailStr, BaseModel
-
+from .common_field_model import CommonField
 # User schema for creating a user (faculty)
 
 
@@ -77,25 +77,12 @@ class StudentCreate(StudentBase):
     pass
 
 
-class Student(StudentBase):
-    """ auto generated id, created_at for the student
-
-    inherited from StudentBase
-    added id and created_at"""
-
-    id: int = Field(..., description="Auto-incremented ID of the student")
-    created_at: str = Field(...,
-                            description="The date and time the student was created")
-
-    class Config:
-        """Configurations for the schema"""
-        from_attributes = True
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat()
-        }
-
+class Student(CommonField, StudentBase):
+    pass
 
 # User schema for logging in a user
+
+
 class LoginRequest(BaseModel):
     """Request model for logging in a user"""
     email: EmailStr

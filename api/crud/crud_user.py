@@ -1,7 +1,7 @@
 # This file contains user's crud operations for the api
 
-from .schemas import user_schema
-from . import models
+from ..schemas import user_schema
+from .. import models
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import Optional

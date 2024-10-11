@@ -24,7 +24,7 @@ def test_user_signin(client):
     # Test for invalid email
 
     login_data = {
-        "email": "john.diffemail@example.com",
+        "email": "john.diffemail@southernct.edu",
         "password": "secret_password"
     }
 

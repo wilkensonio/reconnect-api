@@ -1,10 +1,11 @@
 # Description: API routes for the application
 import os
 import logging
-from .. import crud_user, database
-from ..schemas import user_schema, user_schema_response
-from api import jwt_utils
-from api.mail_utils import EmailVerification
+from api.crud import crud_user
+from .. import database
+from ..schemas import response_schema, user_schema
+from api.utils import jwt_utils
+from api.utils.mail_utils import EmailVerification
 from fastapi import APIRouter, Depends, Body, HTTPException
 from sqlalchemy.orm import Session
 from datetime import timedelta
@@ -35,8 +36,15 @@ def send_email_verification(email: user_schema.EmailVerification) -> dict:
     """
 
     email = email.email
+
+    if not email.endswith("@southernct.edu"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid southern email address"
+        )
+
     code = verifier.verification(email)
-    print(code)
+
     if code['verification_code']:
         return code
 
@@ -67,7 +75,7 @@ def verify_email_code(verify: user_schema.EmailVerificationCode):
     return verifier.verify_email_code(user_code, secret_code)
 
 
-@router.post("/signup/", response_model=user_schema_response.UserResponse)
+@router.post("/signup/", response_model=response_schema.UserResponse)
 async def create_user(user: user_schema.UserCreate, db: Session = Depends(database.get_db)):
     """Create a new user
 
@@ -103,7 +111,7 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
 
     new_user = user_crud.create_user(db=db, user=user)
 
-    return user_schema_response.UserResponse(
+    return response_schema.UserResponse(
         id=new_user.id,
         user_id=new_user.user_id,
         first_name=new_user.first_name,
@@ -114,7 +122,7 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
     )
 
 
-@router.post("/signin/", response_model=user_schema_response.TokenResponse)
+@router.post("/signin/", response_model=response_schema.TokenResponse)
 async def login_user(
     login_request: user_schema.LoginRequest,
     db: Session = Depends(database.get_db),
@@ -166,7 +174,7 @@ async def login_user(
         data={'sub': user.email}, expires_delta=access_token_expires
     )
 
-    response = user_schema_response.TokenResponse(
+    response = response_schema.TokenResponse(
         id=user.id,
         first_name=user.first_name,
         last_name=user.last_name,
@@ -178,7 +186,7 @@ async def login_user(
     return response
 
 
-@router.post("/signup-student/", response_model=user_schema_response.CreateStudentResponse)
+@router.post("/signup-student/", response_model=response_schema.CreateStudentResponse)
 async def create_student_user(
     student: user_schema.StudentCreate,
     db: Session = Depends(database.get_db),
@@ -209,7 +217,7 @@ async def create_student_user(
 
     student = user_crud.create_student(db=db, student=student)
 
-    return user_schema_response.CreateStudentResponse(
+    return response_schema.CreateStudentResponse(
         id=student.id,
         student_id=student.student_id,
         first_name=student.first_name,
@@ -219,7 +227,7 @@ async def create_student_user(
     )
 
 
-@router.post("/kiosk-signin/", response_model=user_schema_response.TokenResponse)
+@router.post("/kiosk-signin/", response_model=response_schema.TokenResponse)
 async def kiosk_login(
     login_request: user_schema.KioskLoginRequest,
     db: Session = Depends(database.get_db),
@@ -254,7 +262,7 @@ async def kiosk_login(
         data={'sub': user.email}, expires_delta=access_token_expires
     )
 
-    return user_schema_response.TokenResponse(
+    return response_schema.TokenResponse(
         id=user.id,
         first_name=user.first_name,
         last_name=user.last_name,
@@ -264,7 +272,7 @@ async def kiosk_login(
     )
 
 
-@router.get("/users/", response_model=list[user_schema_response.UserResponse])
+@router.get("/users/", response_model=list[response_schema.UserResponse])
 async def get_users(db: Session = Depends(database.get_db)):
     """Retrieve all users. 
 
@@ -290,7 +298,7 @@ async def get_users(db: Session = Depends(database.get_db)):
         )
 
 
-@router.get("/user/email/{email}", response_model=user_schema_response.UserResponse)
+@router.get("/user/email/{email}", response_model=response_schema.UserResponse)
 async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by email.
 
@@ -321,7 +329,7 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
         )
 
 
-@router.get("/user/id/{user_id}", response_model=user_schema_response.UserResponse)
+@router.get("/user/id/{user_id}", response_model=response_schema.UserResponse)
 def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by id.
 
@@ -346,7 +354,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
     return user
 
 
-@router.get("/students/", response_model=list[user_schema_response.Get_StudentResponse])
+@router.get("/students/", response_model=list[response_schema.Get_StudentResponse])
 def get_students(db: Session = Depends(database.get_db)):
     """Get all students 
 

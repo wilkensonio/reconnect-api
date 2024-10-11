@@ -1,7 +1,9 @@
 # Description: API routes for the application
 import os
-from .. import crud_available, database
+from .. import database
+from ..crud import crud_available
 from ..schemas import available_schema as schemas
+from ..schemas import response_schema
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -35,7 +37,7 @@ def create_availability(availability: schemas.CreateAvailability, db: Session = 
 # Get availability by ID
 
 
-@router.get("/availability/get-by-id/{available_id}", response_model=schemas.Available)
+@router.get("/availability/get-by-id/{available_id}", response_model=response_schema.AvailableResponse)
 def get_availability_by_id(available_id: int, db: Session = Depends(database.get_db)):
     """Get availability by ID
 
@@ -55,7 +57,7 @@ def get_availability_by_id(available_id: int, db: Session = Depends(database.get
 # Get all availabilities
 
 
-@router.get("/availabilities/", response_model=List[schemas.Available])
+@router.get("/availabilities/", response_model=List[response_schema.AvailableResponse])
 def get_all_availabilities(db: Session = Depends(database.get_db)) -> List[schemas.Available]:
     """Get all availabilities
 

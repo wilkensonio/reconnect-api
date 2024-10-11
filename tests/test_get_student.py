@@ -3,7 +3,7 @@ def test_get_student(client):
         "student_id": "705735368",
         "first_name": "John",
         "last_name": "Doe",
-        "email": "john.doe@southernct.com",
+        "email": "hilarionw2@southernct.edu",
         "phone_number": "1234567890"
     }
 
