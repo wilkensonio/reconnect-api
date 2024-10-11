@@ -40,14 +40,3 @@ def client():
         yield c
     Base.metadata.drop_all(bind=engine)
     #
-
-
-@pytest.fixture
-def mock_secret_key(mocker):
-    """Mock the database query to return a valid secret key."""
-    mock_secret_entry = MagicMock()
-    mock_secret_entry.api_secret_key = "478f053bfdaa7699a6ba4c0f236b75a54793b6317d41aeb0c5797a00c221af8b"
-
-    # Mock the query method on the Secret model
-    mock_query = mocker.patch('sqlalchemy.orm.Session.query')
-    mock_query.return_value.filter.return_value.all.return_value = mock_secret_entry
