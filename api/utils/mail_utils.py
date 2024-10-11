@@ -44,15 +44,15 @@ class EmailVerification:
         msg['From'] = self.SENDER_EMAIL
         msg['To'] = email
         msg['Subject'] = subject
-        msg.attach(MIMEText(message, 'html'))  # Attach the HTML message
+        msg.attach(MIMEText(message, 'html'))
 
         try:
             # Connect to the SMTP server
             with smtplib.SMTP(self.SMTP_SERVER, self.SMTP_PORT) as server:
                 server.starttls()  # Use TLS for security
-                server.login(self.SENDER_EMAIL, self.SENDER_PASSWORD)  # Login
+                server.login(self.SENDER_EMAIL, self.SENDER_PASSWORD)
                 server.sendmail(self.SENDER_EMAIL, email,
-                                msg.as_string())  # Send email
+                                msg.as_string())
 
             print("Email sent successfully.")
             logging.info(f"Email sent to {email}")
@@ -77,13 +77,15 @@ class EmailVerification:
         <div style="max-width: 400px; margin: auto; border: 1px solid #ccc; border-radius: 8px;
         overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-family: Arial, sans-serif;">
             <div style="padding: 2rem;">
-                <h2 style="color: #333;">Email Verification</h2>
-                <p style="font-size: 16px; color: #555;">Your email verification code is:</p>
-                <h3 style="color: #007bff;">{verification_code}</h3>
+                <h1 style="color: blue; text-align:center; font-weight:bold;">ReConnect</h1>
+                <p style="font-size: 16px; color: #555;">
+                    Your verification code is:&nbsp;
+                    <span style="color: #007bff; font-weight:bold;">{verification_code}</span>
+                </p>
                 <p style="color: #777;">Please use this code to verify your email address.</p>
                 <p style="font-size: 14px; color: #999;">If you did not request this, please ignore this email.</p>
-                <div style="margin-top: 2rem; padding: 1rem; background-color: #474b46; border: 1px solid #f5c6cb;>
-                <p style="font-size: 14px; font-weight:bold; color: red;">This email is not being monitored please do not reply to it.</p>
+                <div style="padding: .2rem 0;">
+                    <p style="font-size: 14px; font-weight:bold; color: red;">This email is not being monitored please do not reply to it.</p>
                 </div>
             </div>
         </div>

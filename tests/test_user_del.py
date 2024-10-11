@@ -40,16 +40,6 @@ def test_del_user(client):
     assert response.json() == {
         'detail': 'An error occurred while attempting to delete user'}
 
-    user_data = {
-        "user_id": "70573536",
-        "first_name": "John",
-        "last_name": "Doe",
-        "email": "john.doe@southernct.com",
-        "password": "secret_password",
-        "phone_number": "2036908924"
-    }
-
-    # Sign up user
-    response = client.post("/api/v1/signup/", json=user_data)
-    print(response.json())
-    assert response.status_code == 400, f"fail signup: {response.json()}"
+    # Try deleting a user that does not exist (404 error expected)
+    response = client.delete("/api/v1/delete/123456")
+    assert response.status_code == 404

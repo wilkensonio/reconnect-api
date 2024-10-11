@@ -1,3 +1,5 @@
+
+
 def test_create_availability(client):
     availability_data = {
         "day": "Monday",
@@ -5,10 +7,14 @@ def test_create_availability(client):
         "end_time": "17:00",
         "user_id": "70573522"
     }
-
+    headers = {
+        "R-API-KEY": ""
+    }
     response = client.post(
-        "/api/v1/availability/create/", json=availability_data)
-
+        "/api/v1/availability/create/",
+        json=availability_data,
+        headers=headers
+    )
     assert response.status_code == 200, f"Expected 200 but got {
         response.status_code}: {response.json()}"
 

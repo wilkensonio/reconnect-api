@@ -3,7 +3,7 @@ import logging
 
 def test_email_sent(client):
     email_data = {
-        "email": "tcbwilkenson@gmail.com"
+        "email": "hilarionw2@southernct.edu"
     }
 
     response = client.post("/api/v1/verify-email/", json=email_data)
