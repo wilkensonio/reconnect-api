@@ -56,6 +56,16 @@ class SigninResponse(BaseModel):
     email: EmailStr
 
 
+class KioskSigninResponse(BaseModel):
+    """Response model for kiosk signin"""
+    id: int
+    student_id: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    access_token: str
+
+
 class GetUsersResponse(BaseModel):
     """Response model for getting all users"""
     users: list[UserResponse]

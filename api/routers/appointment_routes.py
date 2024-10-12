@@ -9,10 +9,6 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from dotenv import load_dotenv
-
-load_dotenv()
-EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
 router = APIRouter()
@@ -88,8 +84,10 @@ def get_appointment_by_id(appointment_id: int, db: Session = Depends(database.ge
     return appointment
 
 
-@router.put("/appointment/update/{appointment_id}", response_model=response_schema.GetAppointmentByIdResponse)
-def update_appointment(appointment_id: int, appointment_update: schemas.AppointmentUpdate,
+@router.put("/appointment/update/{appointment_id}",
+            response_model=response_schema.GetAppointmentByIdResponse)
+def update_appointment(appointment_id: int,
+                       appointment_update: schemas.AppointmentUpdate,
                        db: Session = Depends(database.get_db),
                        token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.GetAppointmentByIdResponse:
     """Update an appointment by ID

@@ -1,4 +1,3 @@
-# Description: API routes for the application
 import os
 from .. import database
 from ..crud import crud_user

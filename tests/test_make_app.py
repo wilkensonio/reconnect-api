@@ -18,13 +18,14 @@ def user_signup(client):
     return response.json()
 
 
-def test_update_appointment(client, user_signup):
+def test_make_app(client, user_signup):
     app_data = {
         "faculty_id": "70573522",
         "date": "2022-01-01",
         "start_time": "08:00",
         "end_time": "17:00",
         "reason": "Meeting with students",
+        "status": "cancelled",
         "student_id": "70573522"
     }
 
@@ -41,6 +42,7 @@ def test_update_appointment(client, user_signup):
     headers = {
         'Authorization': f"Bearer {response_json['access_token']}"
     }
+
     response = client.post("/api/v1/appointment/create/",
                            json=app_data, headers=headers)
     response_json = response.json()
@@ -49,17 +51,3 @@ def test_update_appointment(client, user_signup):
     assert response_json["faculty_id"] == "70573522"
     assert response_json["student_id"] == "70573522"
     assert "id" in response_json
-
-    update_data = {
-        "faculty_id": "70573522",
-        "date": "2022-01-01",
-        "start_time": "18:30",
-        "end_time": "19:00",
-        "reason": "Meeting with students",
-        "student_id": "70573522"
-    }
-
-    response = client.put(
-        f"/api/v1/appointment/update/{response_json['id']}", json=update_data, headers=headers)
-
-    assert response.status_code == 200

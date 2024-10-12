@@ -1,4 +1,3 @@
-# Description: API routes for the application
 import os
 import logging
 from api.crud import crud_user
@@ -8,7 +7,6 @@ from api.utils import jwt_utils
 from api.utils.mail_utils import EmailVerification
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import Annotated
 from dotenv import load_dotenv
 
 
@@ -127,7 +125,6 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
 async def login_user(
     login_request: user_schema.LoginRequest,
     db: Session = Depends(database.get_db),
-    token: str = Annotated[str, Depends(jwt_utils.oauth2_scheme)]
 ):
     """Login a user by email and password
 
@@ -151,13 +148,13 @@ async def login_user(
             User detail with access token 
     """
 
-    if not login_request.username.endswith("@southernct.edu"):
+    if not login_request.email.endswith("@southernct.edu"):
         raise HTTPException(
             status_code=400,
             detail="Invalid southern email address"
         )
 
-    user = user_crud.get_user_by_email(db, email=login_request.username)
+    user = user_crud.get_user_by_email(db, email=login_request.email)
 
     if not user:
         raise HTTPException(
@@ -226,11 +223,10 @@ async def create_student_user(
     )
 
 
-@router.post("/kiosk-signin/", response_model=response_schema.SigninResponse)
+@router.post("/kiosk-signin/", response_model=response_schema.KioskSigninResponse)
 async def kiosk_login(
     login_request: user_schema.KioskLoginRequest,
     db: Session = Depends(database.get_db),
-    token: str = Annotated[str, Depends(jwt_utils.oauth2_scheme)]
 ):
     """Login a user via kiosk (using last 4 digits of ID or full barcode)
     args:
@@ -257,13 +253,18 @@ async def kiosk_login(
             detail="No User exists with the provided ID"
         )
 
-    return response_schema.SigninResponse(
+    create_token = jwt_utils.create_access_token(
+        data={"sub": login_request.user_id},
+        expires_delta=jwt_utils.timedelta(minutes=int(EXPRIRES_MINUTES))
+    )
+
+    return response_schema.KioskSigninResponse(
         id=user.id,
-        user_id=user.student_id,
+        student_id=user.student_id,
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
-
+        access_token=create_token
     )
 
 

@@ -1,4 +1,24 @@
-def test_del_app(client):
+import pytest
+
+
+@pytest.fixture
+def user_signup(client):
+    user_data = {
+        "user_id": "70573536",
+        "first_name": "John",
+        "last_name": "Doe",
+        "email": "john.doe@southernct.edu",
+        "password": "secret_password",
+        "phone_number": "2036908924"
+    }
+
+    response = client.post("/api/v1/signup/", json=user_data)
+    assert response.status_code == 200
+    assert response.json()["email"] == "john.doe@southernct.edu"
+    return response.json()
+
+
+def test_del_app(client, user_signup):
     app_data = {
         "faculty_id": "70573522",
         "date": "2022-01-01",
@@ -7,7 +27,22 @@ def test_del_app(client):
         "reason": "Meeting with students",
         "student_id": "70573522"
     }
-    response = client.post("/api/v1/appointment/create/", json=app_data)
+
+    login_data = {
+        "username": user_signup["email"],
+        "password": "secret_password"
+    }
+
+    response = client.post("/api/v1/token/", data=login_data)
+    assert response.status_code == 200
+    response_json = response.json()
+
+    headers = {
+        'Authorization': f"Bearer {response_json['access_token']}"
+    }
+
+    response = client.post("/api/v1/appointment/create/",
+                           json=app_data, headers=headers)
     response_json = response.json()
     assert response.status_code == 200
     assert response_json["reason"] == "Meeting with students"
@@ -16,12 +51,12 @@ def test_del_app(client):
     assert "id" in response_json
 
     response = client.delete(
-        f"/api/v1/appointment/delete/{response_json['id']}")
+        f"/api/v1/appointment/delete/{response_json['id']}", headers=headers)
     assert response.status_code == 200
     assert response.json() == True
 
     response = client.delete(
-        f"/api/v1/appointment/delete/{response_json['id']}")
+        f"/api/v1/appointment/delete/{response_json['id']}", headers=headers)
     assert response.status_code == 404
     assert response.json() == {
         "detail": "Appointment not found or already deleted"}
