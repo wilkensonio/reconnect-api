@@ -47,14 +47,13 @@ class Get_StudentResponse(BaseModel):
         }
 
 
-class TokenResponse(BaseModel):
+class SigninResponse(BaseModel):
     """Response model for logging in a user"""
     id: int
+    user_id: str
     first_name: str
     last_name: str
     email: EmailStr
-    access_token: str
-    token_type: str = "bearer"
 
 
 class GetUsersResponse(BaseModel):

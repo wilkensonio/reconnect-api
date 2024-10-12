@@ -85,7 +85,8 @@ class Student(CommonField, StudentBase):
 
 class LoginRequest(BaseModel):
     """Request model for logging in a user"""
-    email: EmailStr
+
+    username: EmailStr
     password: str
 
 # response models
