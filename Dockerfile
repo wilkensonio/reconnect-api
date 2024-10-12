@@ -12,7 +12,7 @@ WORKDIR /app
 
 COPY . /app 
 COPY . .env 
-COPY . requirements.txt
+
 COPY . .
 
 RUN ls -la /app
