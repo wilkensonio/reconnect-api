@@ -1,3 +1,5 @@
+
+
 def test_user_signup(client):
     user_data = {
         "user_id": "70573536",
@@ -11,3 +13,4 @@ def test_user_signup(client):
     response = client.post("/api/v1/signup/", json=user_data)
     assert response.status_code == 200
     assert response.json()["email"] == "john.doe@southernct.edu"
+    return response.json()

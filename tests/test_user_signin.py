@@ -1,5 +1,8 @@
-def test_user_signin(client):
-    # First, create a user
+import pytest
+
+
+@pytest.fixture
+def user_signup(client):
     user_data = {
         "user_id": "70573536",
         "first_name": "John",
@@ -8,23 +11,25 @@ def test_user_signin(client):
         "password": "secret_password",
         "phone_number": "2036908924"
     }
-    client.post("/api/v1/signup/", json=user_data)
 
-    # Then, attempt to log in
+    response = client.post("/api/v1/signup/", json=user_data)
+    assert response.status_code == 200
+    assert response.json()["email"] == "john.doe@southernct.edu"
+    return response.json()
+
+
+def test_user_signin(client, user_signup):
+    # Test login with valid user credentials
     login_data = {
-        "email": "john.doe@southernct.edu",
+        "email": user_signup["email"],
         "password": "secret_password"
     }
     response = client.post("/api/v1/signin/", json=login_data)
     assert response.status_code == 200
-    data = response.json()
-    assert "access_token" in data
-    assert data["token_type"] == "bearer"
 
     # Test for invalid email
-
     login_data = {
-        "email": "john.diffemail@southernct.edu",
+        "email": "johndoe@southernct.edu",
         "password": "secret_password"
     }
 

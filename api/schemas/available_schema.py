@@ -100,6 +100,8 @@ class AppointmentUpdate(BaseModel):
         None, description="The id (HootLoot) of the faculty")
     date: Optional[str] = Field(
         None, description="The date of the appointment")
+    reason: Optional[str] = Field(
+        None, description="The reason for the appointment")
 
     class Config:
         """Configurations for the schema"""

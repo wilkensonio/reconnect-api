@@ -1,4 +1,3 @@
-# Description: API routes for the application
 import os
 import logging
 from api.crud import crud_user
@@ -6,13 +5,13 @@ from .. import database
 from ..schemas import response_schema, user_schema
 from api.utils import jwt_utils
 from api.utils.mail_utils import EmailVerification
-from fastapi import APIRouter, Depends, Body, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import timedelta
-from typing import Optional
 from dotenv import load_dotenv
 
+
 load_dotenv()
+
 EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
@@ -122,7 +121,7 @@ async def create_user(user: user_schema.UserCreate, db: Session = Depends(databa
     )
 
 
-@router.post("/signin/", response_model=response_schema.TokenResponse)
+@router.post("/signin/", response_model=response_schema.SigninResponse)
 async def login_user(
     login_request: user_schema.LoginRequest,
     db: Session = Depends(database.get_db),
@@ -148,6 +147,7 @@ async def login_user(
         user_schema.TokenResponse
             User detail with access token 
     """
+
     if not login_request.email.endswith("@southernct.edu"):
         raise HTTPException(
             status_code=400,
@@ -168,19 +168,12 @@ async def login_user(
             detail="Invalid email or password"
         )
 
-    #  create access token (JWT) for the user
-    access_token_expires = timedelta(minutes=int(EXPRIRES_MINUTES))
-    access_token = jwt_utils.create_access_token(
-        data={'sub': user.email}, expires_delta=access_token_expires
-    )
-
-    response = response_schema.TokenResponse(
+    response = response_schema.SigninResponse(
         id=user.id,
+        user_id=user.user_id,
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
-        access_token=access_token,
-        token_type="bearer"
     )
 
     return response
@@ -190,6 +183,7 @@ async def login_user(
 async def create_student_user(
     student: user_schema.StudentCreate,
     db: Session = Depends(database.get_db),
+    token: str = Depends(jwt_utils.oauth2_scheme),
 ):
     """Create a new student user
 
@@ -209,6 +203,8 @@ async def create_student_user(
         user_schema.UserResponse
             Student detail"""
 
+    jwt_utils.verify_token(token)
+
     if not student.email.endswith("@southernct.edu"):
         raise HTTPException(
             status_code=400,
@@ -227,7 +223,7 @@ async def create_student_user(
     )
 
 
-@router.post("/kiosk-signin/", response_model=response_schema.TokenResponse)
+@router.post("/kiosk-signin/", response_model=response_schema.KioskSigninResponse)
 async def kiosk_login(
     login_request: user_schema.KioskLoginRequest,
     db: Session = Depends(database.get_db),
@@ -248,6 +244,7 @@ async def kiosk_login(
 
         user_schema.TokenResponse
     """
+
     user = user_crud.get_student_by_id(db, login_request.user_id)
 
     if not user:
@@ -256,24 +253,24 @@ async def kiosk_login(
             detail="No User exists with the provided ID"
         )
 
-    #  create access token (JWT) for the user
-    access_token_expires = timedelta(minutes=int(EXPRIRES_MINUTES))
-    access_token = jwt_utils.create_access_token(
-        data={'sub': user.email}, expires_delta=access_token_expires
+    create_token = jwt_utils.create_access_token(
+        data={"sub": login_request.user_id},
+        expires_delta=jwt_utils.timedelta(minutes=int(EXPRIRES_MINUTES))
     )
 
-    return response_schema.TokenResponse(
+    return response_schema.KioskSigninResponse(
         id=user.id,
+        student_id=user.student_id,
         first_name=user.first_name,
         last_name=user.last_name,
         email=user.email,
-        access_token=access_token,
-        token_type="bearer"
+        access_token=create_token
     )
 
 
 @router.get("/users/", response_model=list[response_schema.UserResponse])
-async def get_users(db: Session = Depends(database.get_db)):
+async def get_users(token: str = Depends(jwt_utils.oauth2_scheme),
+                    db: Session = Depends(database.get_db)):
     """Retrieve all users. 
 
     Raises
@@ -287,6 +284,8 @@ async def get_users(db: Session = Depends(database.get_db)):
         list[user_schema.UserResponse]
             List of all users"""
 
+    jwt_utils.verify_token(token)
+
     try:
         users = user_crud.get_users(db)
         return users
@@ -299,7 +298,8 @@ async def get_users(db: Session = Depends(database.get_db)):
 
 
 @router.get("/user/email/{email}", response_model=response_schema.UserResponse)
-async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
+async def get_user_by_email(email: str, db: Session = Depends(database.get_db),
+                            token: str = Depends(jwt_utils.oauth2_scheme)):
     """Retrieve a user by email.
 
     Attributes
@@ -318,6 +318,9 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     -------
         user_schema.UserResponse
             User detail"""
+
+    jwt_utils.verify_token(token)
+
     try:
         user = user_crud.get_user_by_email(db, email)
         return user
@@ -330,7 +333,7 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
 
 
 @router.get("/user/id/{user_id}", response_model=response_schema.UserResponse)
-def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
+def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: str = Depends(jwt_utils.oauth2_scheme)):
     """Retrieve a user by id.
 
     Attributes
@@ -350,12 +353,14 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db)):
         user_schema.UserResponse
             User detail"""
 
+    jwt_utils.verify_token(token)
     user = user_crud.get_user_by_id(db, user_id)
     return user
 
 
 @router.get("/students/", response_model=list[response_schema.Get_StudentResponse])
-def get_students(db: Session = Depends(database.get_db)):
+def get_students(db: Session = Depends(database.get_db),
+                 token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get all students 
 
 
@@ -363,6 +368,8 @@ def get_students(db: Session = Depends(database.get_db)):
 
         List[Student]: List of all students
     """
+    jwt_utils.verify_token(token)
+
     student = user_crud.get_students(db)
     if not student:
         raise HTTPException(
@@ -373,7 +380,8 @@ def get_students(db: Session = Depends(database.get_db)):
 
 
 @router.delete("/user/delete/{email_or_id}", response_model=dict)
-def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db)):
+def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
+                          token: str = Depends(jwt_utils.oauth2_scheme)):
     """Delete a user by id or by email
 
     Attributes
@@ -393,6 +401,9 @@ def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_d
         dict: {"detail" : str}
 
         """
+
+    jwt_utils.verify_token(token)
+
     try:
         if user_crud.delete_user(db, email=email_or_id):
             return {"detail": "User deleted successfully"}

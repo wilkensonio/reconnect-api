@@ -1,17 +1,14 @@
 # Description: API routes for the application
 import os
 from .. import database
-from  ..crud import crud_appointment
+from ..crud import crud_appointment
 from ..schemas import available_schema as schemas
 from ..schemas import response_schema
+from ..utils import jwt_utils
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-from dotenv import load_dotenv
-
-load_dotenv()
-EXPRIRES_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 
 router = APIRouter()
@@ -21,7 +18,8 @@ appointment_crud = crud_appointment.CrudAppointment()
 
 
 @router.post("/appointment/create/", response_model=response_schema.CreateAppointmentResponse)
-def create_appointment(appointment: schemas.CreateAppointment, db: Session = Depends(database.get_db)):
+def create_appointment(appointment: schemas.CreateAppointment, db: Session = Depends(database.get_db),
+                       token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.CreateAppointmentResponse:
     """Create a new appointment 
 
     Args:
@@ -32,11 +30,14 @@ def create_appointment(appointment: schemas.CreateAppointment, db: Session = Dep
 
        response_schema.CreateAppointmentResponse: appointment details"""
 
+    jwt_utils.verify_token(token)
+
     return appointment_crud.appointment_create(db, appointment)
 
 
 @router.get("/appointments/", response_model=List[response_schema.CreateAppointmentResponse])
-def get_appointments(db: Session = Depends(database.get_db)):
+def get_appointments(db: Session = Depends(database.get_db),
+                     token: str = Depends(jwt_utils.oauth2_scheme)) -> List[response_schema.CreateAppointmentResponse]:
     """Get all availabilities
 
     Args:
@@ -46,6 +47,8 @@ def get_appointments(db: Session = Depends(database.get_db)):
     Returns:
 
         List[Available]: List of all availabilities"""
+
+    jwt_utils.verify_token(token)
 
     try:
         return appointment_crud.get_appointments(db)
@@ -59,8 +62,10 @@ def get_appointments(db: Session = Depends(database.get_db)):
         )
 
 
-@router.get("/appointment/get-by-id/{appointment_id}", response_model=response_schema.GetAppointmentByIdResponse)
-def get_appointment_by_id(appointment_id: int, db: Session = Depends(database.get_db)):
+@router.get("/appointment/get-by-id/{appointment_id}",
+            response_model=response_schema.GetAppointmentByIdResponse)
+def get_appointment_by_id(appointment_id: int, db: Session = Depends(database.get_db),
+                          token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.GetAppointmentByIdResponse:
     """Get appointment by ID
 
     Args:
@@ -71,15 +76,20 @@ def get_appointment_by_id(appointment_id: int, db: Session = Depends(database.ge
 
     schemas.Available: Availability details"""
 
+    jwt_utils.verify_token(token)
+
     appointment = appointment_crud.get_appointment_by_id(db, appointment_id)
     if not appointment:
         raise HTTPException(status_code=404, detail="Availability not found")
     return appointment
 
 
-@router.put("/appointment/update/{appointment_id}", response_model=response_schema.GetAppointmentByIdResponse)
-def update_appointment(appointment_id: int, appointment_update: schemas.AppointmentUpdate,
-                       db: Session = Depends(database.get_db)) -> response_schema.GetAppointmentByIdResponse:
+@router.put("/appointment/update/{appointment_id}",
+            response_model=response_schema.GetAppointmentByIdResponse)
+def update_appointment(appointment_id: int,
+                       appointment_update: schemas.AppointmentUpdate,
+                       db: Session = Depends(database.get_db),
+                       token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.GetAppointmentByIdResponse:
     """Update an appointment by ID
 
     Args:
@@ -91,11 +101,14 @@ def update_appointment(appointment_id: int, appointment_update: schemas.Appointm
 
         schemas.GetAppointmentByIdResponse: Updated appointment details"""
 
+    jwt_utils.verify_token(token)
+
     return appointment_crud.update_appointment(db, appointment_id, appointment_update)
 
 
 @router.delete("/appointment/delete/{appointment_id}", response_model=Optional[bool])
-def delete_update_appointment(appointment_id: int, db: Session = Depends(database.get_db)) -> bool:
+def delete_update_appointment(appointment_id: int, db: Session = Depends(database.get_db),
+                              token: str = Depends(jwt_utils.oauth2_scheme)) -> bool:
     """Delete an appointment by ID
 
     Args:
@@ -105,6 +118,8 @@ def delete_update_appointment(appointment_id: int, db: Session = Depends(databas
     Returns:
 
         bool: True if appointment was deleted, False otherwise"""
+
+    jwt_utils.verify_token(token)
 
     deleted = appointment_crud.delete_appointment(db, appointment_id)
     if not deleted:
