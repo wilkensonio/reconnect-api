@@ -38,7 +38,7 @@ class UserCrud:
                 )
             raise HTTPException(
                 status_code=400,
-                detail="An error occurred while attempting to signup"
+                detail=f"An error occurred while attempting to signup {e}"
             )
 
         return new_user
@@ -179,24 +179,34 @@ class UserCrud:
 
         return: user_schema.StudentResponse: Student details"""
 
-        try:
-            existing_student = db.query(models.Student).filter(
-                models.Student.email == student.email).first()
+        existing_student = db.query(models.Student).filter(
+            models.Student.email == student.email).first()
 
+        existing_student_id = db.query(models.Student).filter(
+            models.Student.student_id == student.student_id).first()
+
+        if existing_student:
+            raise HTTPException(
+                status_code=400,
+                detail="Email already registered"
+            )
+        elif existing_student_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Student ID already registered"
+            )
+
+        try:
             new_student = models.Student(**student.model_dump())
             db.add(new_student)
             db.commit()
             db.refresh(new_student)
 
         except Exception as e:
-            if existing_student:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Email already registered"
-                )
             raise HTTPException(
                 status_code=400,
-                detail=f"An error occurred while attempting to signup {e}"
+                detail=f"An error occurred while attempting to signup student {
+                    e}"
             )
 
         return new_student

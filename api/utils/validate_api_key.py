@@ -18,7 +18,7 @@ async def validate_api_key(api_key: str = Security(api_key_header),
 
     if not secret_entries:
         raise HTTPException(
-            status_code=403, detail="your are not authorized")
+            status_code=403, detail="Your are not authorized")
 
     hashed_secret_keys = {
         secret_entry.api_secret_key for secret_entry in secret_entries}
@@ -27,6 +27,6 @@ async def validate_api_key(api_key: str = Security(api_key_header),
 
     if hashed_api_key not in hashed_secret_keys:
         raise HTTPException(
-            status_code=403, detail="Could not validate API key")
+            status_code=403, detail="Not a valid API key")
 
     return True  # API key is valid
