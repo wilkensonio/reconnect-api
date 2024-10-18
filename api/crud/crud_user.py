@@ -210,3 +210,25 @@ class UserCrud:
             )
 
         return new_student
+
+    @staticmethod
+    def reset_password(db: Session, email: str, new_password: str):
+        """Reset a user's password
+
+        Args:
+            db (Session): Database session
+            email (str): User email
+            new_password (str): New password
+
+        Returns:
+            bool: True if password was reset, False otherwise"""
+
+        existing_user = db.query(models.User).filter(
+            models.User.email == email).first()
+
+        if existing_user:
+            existing_user.hash_password(new_password)
+            db.commit()
+            return True
+
+        return False

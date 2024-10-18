@@ -107,3 +107,9 @@ class EmailVerificationCode(BaseModel):
 class KioskLoginRequest (BaseModel):
     """Request model for logging in a kiosk"""
     user_id: str
+
+
+class ResetPassword(BaseModel):
+    """Request model for resetting a password"""
+    email: EmailStr
+    password: str

@@ -379,6 +379,37 @@ def get_students(db: Session = Depends(database.get_db),
     return student
 
 
+@router.put("/reset-password/", response_model=dict)
+def reset_password(data: user_schema.ResetPassword, db:  Session = Depends(database.get_db)):
+    """Reset user password
+
+    Args:
+
+        email : str
+            User email
+
+    Returns:
+
+        dict: {"detail" : str"""
+
+    email, password = data.email, data.password
+
+    if not email.lower().endswith("@southernct.edu"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid southern email address"
+        )
+    if not password:
+        raise HTTPException(
+            status_code=400,
+            detail="Password cannot be empty"
+        )
+    res = user_crud.reset_password(db, email, password)
+    return {
+        "detail": res
+    }
+
+
 @router.delete("/user/delete/{email_or_id}", response_model=dict)
 def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
                           token: str = Depends(jwt_utils.oauth2_scheme)):
