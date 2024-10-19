@@ -7,6 +7,8 @@ from api.utils import jwt_utils
 from api.utils.mail_utils import EmailVerification
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from typing import List
+
 from dotenv import load_dotenv
 
 
@@ -223,6 +225,72 @@ async def create_student_user(
     )
 
 
+@router.post("/blacklist/{user_id}", response_model=dict)
+def blacklist_user_by_id(
+    user_id: str,
+    db: Session = Depends(database.get_db),
+    token: str = Depends(jwt_utils.oauth2_scheme),
+):
+    """Blacklist a user by id
+
+    Args:
+
+        user_id : str
+            Student id (hootloot) or email
+
+        token : str
+            User token
+
+    Returns:
+
+        dict: {"detail" : str}
+    """
+    if not user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="User ID cannot be empty"
+        )
+
+    jwt_utils.verify_token(token)
+
+    if user_crud.blacklist_user(db, student_id=user_id):
+        return {"detail": f"User {user_id} blacklisted"}
+
+    return {"detail": f"User {user_id} not found or already blacklisted"}
+
+
+@router.get("/blacklist/", response_model=List[response_schema.BlacklistResponse])
+def blacklist_user(
+        db: Session = Depends(database.get_db),
+        token: str = Depends(jwt_utils.oauth2_scheme)):
+    """Blacklist a user
+
+    Args:
+
+        token : str
+            User token
+
+    Returns:
+
+        dict: {"detail" : str}
+    """
+
+    jwt_utils.verify_token(token)
+    blacklisted = []
+    try:
+        blacklisted = user_crud.get_blacklisted_students(db)
+        if not blacklisted:
+            return []
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to blacklist user"
+        )
+
+    return [response_schema.BlacklistResponse(student_id=student.user_id) for student in blacklisted]
+
+
 @router.post("/kiosk-signin/", response_model=response_schema.KioskSigninResponse)
 async def kiosk_login(
     login_request: user_schema.KioskLoginRequest,
@@ -268,7 +336,7 @@ async def kiosk_login(
     )
 
 
-@router.get("/users/", response_model=list[response_schema.UserResponse])
+@router.get("/users/", response_model=List[response_schema.UserResponse])
 async def get_users(token: str = Depends(jwt_utils.oauth2_scheme),
                     db: Session = Depends(database.get_db)):
     """Retrieve all users. 
@@ -281,7 +349,7 @@ async def get_users(token: str = Depends(jwt_utils.oauth2_scheme),
 
     Returns
     -------
-        list[user_schema.UserResponse]
+        List[user_schema.UserResponse]
             List of all users"""
 
     jwt_utils.verify_token(token)
@@ -358,7 +426,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: 
     return user
 
 
-@router.get("/students/", response_model=list[response_schema.Get_StudentResponse])
+@router.get("/students/", response_model=List[response_schema.Get_StudentResponse])
 def get_students(db: Session = Depends(database.get_db),
                  token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get all students 

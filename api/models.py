@@ -130,14 +130,13 @@ class Note(Base):
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 
 
-class Backlsit(Base):
+class Blacklist(Base):
     """Blacklist model"""
 
     __tablename__ = "blacklist"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(String(255), ForeignKey(
-        'faculty.user_id', ondelete='CASCADE', name='user_blacklist'), nullable=False)
+    user_id = Column(String(255), unique=True, nullable=False)
     created_at = Column(
         String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
 

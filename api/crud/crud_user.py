@@ -3,6 +3,7 @@
 from ..schemas import user_schema
 from .. import models
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from fastapi import HTTPException
 from typing import Optional
 
@@ -151,7 +152,12 @@ class UserCrud:
         Returns:
             List[Student]: List of all students"""
 
-        return db.query(models.Student).all()
+        backlisted_ids = select(models.Blacklist.user_id)
+        students = db.query(models.Student).filter(
+            ~models.Student.student_id.in_(
+                db.execute(backlisted_ids).scalars())
+        ).all()
+        return students
 
     @staticmethod
     def get_student_by_email(db: Session, email: str):
@@ -210,6 +216,48 @@ class UserCrud:
             )
 
         return new_student
+
+    @staticmethod
+    def blacklist_user(db: Session, student_id: Optional[str] = None, email: Optional[str] = None):
+        """Delete a student
+
+        Args:
+            db (Session): Database session
+            student_id (int): Student id
+
+        Returns:
+            bool: True if student was deleted, False otherwise 
+        """
+        if not student_id and not email:
+            return False
+
+        if student_id:
+            existing_student = db.query(models.Student).filter(
+                models.Student.student_id == student_id).first()
+        else:
+            existing_student = db.query(models.Student).filter(
+                models.Student.email == email).first()
+
+        if existing_student:
+            # Add to blacklist
+            db.add(models.Blacklist(user_id=existing_student.student_id))
+            db.commit()
+            db.refresh(existing_student)
+            return True
+
+        return False
+
+    @staticmethod
+    def get_blacklisted_students(db: Session):
+        """Get all blacklisted students
+
+        Args:
+            db (Session): Database session
+
+        Returns:
+            List[Student]: List of all blacklisted students"""
+
+        return db.query(models.Blacklist).all()
 
     @staticmethod
     def reset_password(db: Session, email: str, new_password: str):
