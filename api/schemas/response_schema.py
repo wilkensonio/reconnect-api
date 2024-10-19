@@ -116,3 +116,13 @@ class GetAppointmentByIdResponse(BaseModel):
         json_encoders = {
             datetime: lambda dt: dt.isoformat()
         }
+
+
+class BlacklistResponse(BaseModel):
+    student_id: str
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
