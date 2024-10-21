@@ -60,6 +60,19 @@ class AvailableCrud:
         return db.query(models.Available).all()
 
     @staticmethod
+    def get_availability_by_user(db: Session, faculty_id: str) -> Optional[models.Available]:
+        """Get all availables by faculty id
+
+        Args:
+            db (Session): Database session
+            faculty_id (int): Faculty id
+
+        Returns:
+            List[Available]: List of all availables"""
+
+        return db.query(models.Available).filter(models.Available.user_id == faculty_id).all()
+
+    @staticmethod
     def delete_availability(db: Session, available_id: Optional[str] = None) -> bool:
         """Delete a available
 

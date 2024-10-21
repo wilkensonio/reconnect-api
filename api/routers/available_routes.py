@@ -62,6 +62,25 @@ def get_availability_by_id(available_id: int, db: Session = Depends(database.get
         raise HTTPException(status_code=404, detail="Availability not found")
     return availability
 
+
+@router.get("/availability/get-by-user/{faculty_id}", response_model=List[response_schema.AvailableResponse])
+def get_availability_by_user(faculty_id: str, db: Session = Depends(database.get_db),
+                             token: str = Depends(jwt_utils.oauth2_scheme)) -> List[schemas.Available]:
+    """Get availability by user
+
+    Args:
+
+        faculty_id (int): Faculty ID
+
+    Returns:
+
+        List[schemas.Available]: List of availabilities"""
+
+    jwt_utils.verify_token(token)
+
+    return available.get_availability_by_user(db, faculty_id)
+
+
 # Get all availabilities
 
 
