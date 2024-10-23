@@ -1,11 +1,12 @@
 import os
 import logging
+import pandas as pd
 from api.crud import crud_user
 from .. import database
 from ..schemas import response_schema, user_schema
 from api.utils import jwt_utils
 from api.utils.mail_utils import EmailVerification
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -223,6 +224,70 @@ async def create_student_user(
         email=student.email,
         phone_number=student.phone_number,
     )
+
+
+@router.post("/students/upload")
+async def upload_students_csv(
+    file: UploadFile = File(...),
+    db: Session = Depends(database.get_db),
+    token: str = Depends(jwt_utils.oauth2_scheme),
+):
+    """Upload a CSV file containing student details
+
+        Must contain the following columns in the CSV file:
+            Email, ID, Pref. First, Last Name 
+
+    Args:
+
+        file : UploadFile
+            CSV file containing student details
+
+    raises:
+
+            HTTPException
+                code : 400
+                Invalid file type. Please upload a CSV file.
+
+    returns:
+
+        dict: {"status" : str, "added_students" : added_students }"""
+
+    jwt_utils.verify_token(token)
+
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(
+            status_code=400, detail="Invalid file type. Please upload a CSV file.")
+
+    try:
+        df = pd.read_csv(file.file)
+
+        # Map CSV headers to match DB fields
+        df = df.rename(columns={
+            'Email': 'email',
+            'ID': 'student_id',
+            'Pref. First': 'first_name',
+            'Last Name': 'last_name',
+        })
+        df['phone_number'] = '0000000000'
+
+        # Filter out unnecessary columns
+        required_columns = ['email', 'student_id',
+                            'first_name', 'last_name', 'phone_number']
+        df = df[required_columns]
+
+        # Convert the DataFrame to a list of dictionaries for validation
+        students_data = df.to_dict(orient="records")
+
+        # Validate and create student objects
+        students = [user_schema.StudentCreate(
+            **student) for student in students_data]
+        added_students = user_crud.add_student_csv(db=db, students=students)
+
+        return {"status": "success", "added_students": added_students}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Error processing the file: {e}")
 
 
 @router.post("/blacklist/{user_id}", response_model=dict)

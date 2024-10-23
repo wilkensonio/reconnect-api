@@ -98,7 +98,7 @@ class UserCrud:
             user_id (int): User id
 
             Returns:
-            bool: True if user was deleted, False otherwise 
+            bool: True if user was deleted, False otherwise
         """
         if not user_id and not email:
             return False
@@ -128,7 +128,7 @@ class UserCrud:
 
         Returns:
 
-            Object: User details    
+            Object: User details
         """
 
         if len(student_id) == 4:
@@ -218,6 +218,48 @@ class UserCrud:
         return new_student
 
     @staticmethod
+    def add_student_csv(db: Session, students: list[user_schema.StudentCreate]):
+        """Add students from a csv file
+
+        Args:
+            db (Session): Database session
+            students (List[faculty_schema.StudentCreate]): List of student details
+
+        Returns:
+            List[Student]: List of all students added"""
+
+        new_students = []
+
+        for student in students:
+            existing_student = db.query(models.Student).filter(
+                models.Student.email == student.email).first()
+
+            existing_student_id = db.query(models.Student).filter(
+                models.Student.student_id == student.student_id).first()
+
+            is_blacklisted = db.query(models.Blacklist).filter(
+                models.Blacklist.user_id == student.student_id).first()
+
+            if existing_student or existing_student_id or is_blacklisted:
+                continue
+
+            try:
+                new_student = models.Student(**student.model_dump())
+                db.add(new_student)
+                db.commit()
+                db.refresh(new_student)
+                new_students.append(new_student)
+
+            except Exception as e:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"An error occurred while attempting to signup student {
+                        e}"
+                )
+
+        return new_students
+
+    @ staticmethod
     def blacklist_user(db: Session, student_id: Optional[str] = None, email: Optional[str] = None):
         """Delete a student
 
@@ -226,7 +268,7 @@ class UserCrud:
             student_id (int): Student id
 
         Returns:
-            bool: True if student was deleted, False otherwise 
+            bool: True if student was deleted, False otherwise
         """
         if not student_id and not email:
             return False
@@ -247,7 +289,7 @@ class UserCrud:
 
         return False
 
-    @staticmethod
+    @ staticmethod
     def get_blacklisted_students(db: Session):
         """Get all blacklisted students
 
@@ -259,7 +301,7 @@ class UserCrud:
 
         return db.query(models.Blacklist).all()
 
-    @staticmethod
+    @ staticmethod
     def reset_password(db: Session, email: str, new_password: str):
         """Reset a user's password
 
