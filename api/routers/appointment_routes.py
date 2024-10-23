@@ -62,6 +62,35 @@ def get_appointments(db: Session = Depends(database.get_db),
         )
 
 
+@router.get("/appointments/get-by-user/{user_id}",
+            response_model=List[response_schema.CreateAppointmentResponse])
+def get_appointments_by_user(user_id: str, db: Session = Depends(database.get_db),
+                             token: str = Depends(jwt_utils.oauth2_scheme)
+                             ) -> List[response_schema.CreateAppointmentResponse]:
+    """Get all appointments by user
+
+    Args:
+
+        faculty_id Optional[str]: User ID, the hootloot ID
+        student_id Optional[str]: User ID, the hootloot ID  
+
+    Returns:
+
+        List[Appointment]: List of all appointments by user"""
+
+    jwt_utils.verify_token(token)
+
+    try:
+        return appointment_crud.get_appointments_by_user(db, user_id)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"An error occurred while attempting to get appointments {
+                e}"
+        )
+
+
 @router.get("/appointment/get-by-id/{appointment_id}",
             response_model=response_schema.GetAppointmentByIdResponse)
 def get_appointment_by_id(appointment_id: int, db: Session = Depends(database.get_db),
