@@ -57,8 +57,9 @@ class UserCrud:
 
         existing_user = db.query(models.User).filter(
             models.User.email == email).first()
-
-        return existing_user
+        if existing_user:
+            return existing_user
+        return None
 
     @staticmethod
     def get_users(db: Session):
