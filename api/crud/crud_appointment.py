@@ -72,6 +72,29 @@ class CrudAppointment:
         return existing_appointment
 
     @staticmethod
+    def get_appointments_by_user(db: Session, faculty_id: Optional[str], student_id: Optional[str]) -> Optional[models.Appointment]:
+        """Get a appointment by faculty hootloot id
+
+        Args:
+
+            db (Session): Database session
+            faculty_id Optional[str]: Faculty id
+            student_id Optional[str]: Student id
+
+        Returns:
+
+            Appointment: Appointment details"""
+
+        if faculty_id:
+            existing_appointment = db.query(models.Appointment).filter(
+                models.Appointment.faculty_id == faculty_id).all()
+        else:
+            existing_appointment = db.query(models.Appointment).filter(
+                models.Appointment.student_id == student_id).all()
+
+        return existing_appointment
+
+    @staticmethod
     def get_appointments(db: Session) -> list[models.Appointment]:
         """Get all appointments
 

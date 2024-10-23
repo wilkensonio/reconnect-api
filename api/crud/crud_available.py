@@ -64,10 +64,11 @@ class AvailableCrud:
         """Get all availables by faculty id
 
         Args:
-            db (Session): Database session
-            faculty_id (int): Faculty id
+
+            faculty_id: str  the Faculty id (hootloot id)
 
         Returns:
+
             List[Available]: List of all availables"""
 
         return db.query(models.Available).filter(models.Available.user_id == faculty_id).all()
