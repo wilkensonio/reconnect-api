@@ -445,19 +445,22 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
         HTTPException
             code : 400
             User not found
+            code : 500
+            If any other error occurs.
 
     Returns
     -------
         user_schema.UserResponse
             User detail"""
 
+    user = user_crud.get_user_by_email(db, email)
+
+    if not user:
+        raise HTTPException(
+            status_code=400,
+            detail="User not found"
+        )
     try:
-        user = user_crud.get_user_by_email(db, email)
-        if not user:
-            raise HTTPException(
-                status_code=400,
-                detail="User not found"
-            )
         return user
     except Exception as e:
         logging.error(e)
