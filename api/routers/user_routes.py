@@ -431,8 +431,7 @@ async def get_users(token: str = Depends(jwt_utils.oauth2_scheme),
 
 
 @router.get("/user/email/{email}", response_model=response_schema.UserResponse)
-async def get_user_by_email(email: str, db: Session = Depends(database.get_db),
-                            token: str = Depends(jwt_utils.oauth2_scheme)):
+async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by email.
 
     Attributes
@@ -451,8 +450,6 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db),
     -------
         user_schema.UserResponse
             User detail"""
-
-    jwt_utils.verify_token(token)
 
     try:
         user = user_crud.get_user_by_email(db, email)
