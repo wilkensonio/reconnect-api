@@ -323,3 +323,25 @@ class UserCrud:
             return True
 
         return False
+
+    @staticmethod
+    def update_user(db: Session, user_id: str, user: user_schema.UserUpdate):
+        """Update a user's details
+
+        Args:
+            db (Session): Database session
+            user_id (str): User id
+            user (faculty_schema.UserUpdate): User details
+
+        Returns:
+            bool: True if user was updated, False otherwise"""
+
+        existing_user = db.query(models.User).filter(
+            models.User.user_id == user_id).first()
+
+        if existing_user:
+            existing_user.update_user(**user.model_dump())
+            db.commit()
+            return True
+
+        return False
