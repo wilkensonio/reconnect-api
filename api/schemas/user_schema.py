@@ -70,6 +70,27 @@ class StudentBase(BaseModel):
                               min_length=10)
 
 
+class UserUpdate(BaseModel):
+    """Request model for updating a user"""
+
+    email: EmailStr = Field(...,
+                            description="Email must be unique", unique=True)
+    user_id: str = Field(...,
+                         description="Faculty ID (school id) must be unique", unique=True)
+
+    first_name: str = Field(...,
+                            description="First Name cannot be empty", min_length=1)
+
+    last_name: str = Field(...,
+                           description="Last Name cannot be empty", min_length=1)
+
+    phone_number: str = Field(..., description="Phone number must be unique",
+                              min_length=10)
+
+    password: str = Field(...,
+                          description="Password must be at least 8 characters", min_length=8)
+
+
 class StudentCreate(StudentBase):
     """Request model for creating a student
 

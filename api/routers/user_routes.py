@@ -148,7 +148,7 @@ async def login_user(
     Returns
     -------
         user_schema.TokenResponse
-            User detail with access token 
+            User detail with access token
     """
 
     if not login_request.email.endswith("@southernct.edu"):
@@ -235,7 +235,7 @@ async def upload_students_csv(
     """Upload a CSV file containing student details
 
         Must contain the following columns in the CSV file:
-            Email, ID, Pref. First, Last Name 
+            Email, ID, Pref. First, Last Name
 
     Args:
 
@@ -373,7 +373,7 @@ async def kiosk_login(
                 No User exists with the provided ID
 
 
-    Returns: 
+    Returns:
 
         user_schema.TokenResponse
     """
@@ -404,7 +404,7 @@ async def kiosk_login(
 @router.get("/users/", response_model=List[response_schema.UserResponse])
 async def get_users(token: str = Depends(jwt_utils.oauth2_scheme),
                     db: Session = Depends(database.get_db)):
-    """Retrieve all users. 
+    """Retrieve all users.
 
     Raises
     ------
@@ -435,7 +435,7 @@ async def get_user_by_email(email: str, db: Session = Depends(database.get_db)):
     """Retrieve a user by email.
 
     Attributes
-    ---------- 
+    ----------
         email : str
             User email
 
@@ -475,7 +475,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: 
     """Retrieve a user by id.
 
     Attributes
-    ---------- 
+    ----------
         user_id : str
             User id
 
@@ -499,7 +499,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: 
 @router.get("/students/", response_model=List[response_schema.Get_StudentResponse])
 def get_students(db: Session = Depends(database.get_db),
                  token: str = Depends(jwt_utils.oauth2_scheme)):
-    """Get all students 
+    """Get all students
 
 
     Returns:
@@ -548,7 +548,61 @@ def reset_password(data: user_schema.ResetPassword, db:  Session = Depends(datab
     }
 
 
-@router.delete("/user/delete/{email_or_id}", response_model=dict)
+@router.put("/user/update/{hootloot_id}", response_model=response_schema.UserUpdateResponse)
+def update_user(hootloot_id: str,
+                user_update: user_schema.UserUpdate,
+                db: Session = Depends(database.get_db),
+                token: str = Depends(jwt_utils.oauth2_scheme)):
+    """Update a user by  id
+
+    Attributes
+    ----------
+        id : str
+            User hootloot id
+        user : user_schema.UserUpdate
+            User detail
+
+    Raises
+    ------
+        HTTPException
+            code : 400
+            User not found
+            An error occurred while attempting to update user
+
+    Returns
+    -------
+        user_schema.UserUpdate
+            User detail"""
+
+    jwt_utils.verify_token(token)
+
+    try:
+        is_updated = user_crud.update_user(
+            db, user_id=hootloot_id, user=user_update)
+        if is_updated:
+
+            return user_schema.UserUpdate(
+                email=user_update.email,
+                user_id=user_update.user_id,
+                first_name=user_update.first_name,
+                last_name=user_update.last_name,
+                phone_number=user_update.phone_number,
+                password=user_update.password,
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="User not found"
+            )
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to update user"
+        )
+
+
+@ router.delete("/user/delete/{email_or_id}", response_model=dict)
 def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
                           token: str = Depends(jwt_utils.oauth2_scheme)):
     """Delete a user by id or by email
@@ -556,7 +610,7 @@ def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_d
     Attributes
     ----------
         email_or_id : str
-            User email or user_id 
+            User email or user_id
 
     Raises
     ------

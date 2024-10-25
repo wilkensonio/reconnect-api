@@ -38,7 +38,17 @@ class User(Base):
     def check_password(self, password: str) -> bool:
         return self.pwd_context.verify(password, self.password)
 
+    def update_user(self, **kwargs):
+        for key, value in kwargs.items():
+            if key == "password":
+                hash_password = self.pwd_context.hash(value)
+                setattr(self, key, hash_password)
+            else:
+                setattr(self, key, value)
+        return self
+
     availabilities = relationship("Available", back_populates="faculty")
+    # ondelete = "CASCADE"
 
 
 class Student(Base):

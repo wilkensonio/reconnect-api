@@ -29,6 +29,22 @@ class UserResponse(BaseModel):
         }
 
 
+class UserUpdateResponse(BaseModel):
+    """Response model for updating a user"""
+
+    user_id: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone_number: str
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }
+
+
 class Get_StudentResponse(BaseModel):
     """Response model for creating a student"""
 
