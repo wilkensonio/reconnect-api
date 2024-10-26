@@ -291,7 +291,7 @@ async def upload_students_csv(
 
 
 @router.post("/blacklist/{user_id}", response_model=dict)
-def blacklist_user_by_id(
+async def blacklist_user_by_id(
     user_id: str,
     db: Session = Depends(database.get_db),
     token: str = Depends(jwt_utils.oauth2_scheme),
@@ -325,7 +325,7 @@ def blacklist_user_by_id(
 
 
 @router.get("/blacklist/", response_model=List[response_schema.BlacklistResponse])
-def blacklist_user(
+async def blacklist_user(
         db: Session = Depends(database.get_db),
         token: str = Depends(jwt_utils.oauth2_scheme)):
     """Blacklist a user
@@ -497,7 +497,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: 
 
 
 @router.get("/students/", response_model=List[response_schema.Get_StudentResponse])
-def get_students(db: Session = Depends(database.get_db),
+async def get_students(db: Session = Depends(database.get_db),
                  token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get all students
 
@@ -549,7 +549,7 @@ def reset_password(data: user_schema.ResetPassword, db:  Session = Depends(datab
 
 
 @router.put("/user/update/{hootloot_id}", response_model=response_schema.UserUpdateResponse)
-def update_user(hootloot_id: str,
+async def update_user(hootloot_id: str,
                 user_update: user_schema.UserUpdate,
                 db: Session = Depends(database.get_db),
                 token: str = Depends(jwt_utils.oauth2_scheme)):
@@ -603,7 +603,7 @@ def update_user(hootloot_id: str,
 
 
 @ router.delete("/user/delete/{email_or_id}", response_model=dict)
-def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
+async def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
                           token: str = Depends(jwt_utils.oauth2_scheme)):
     """Delete a user by id or by email
 
