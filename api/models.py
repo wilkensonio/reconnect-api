@@ -48,7 +48,51 @@ class User(Base):
         return self
 
     availabilities = relationship("Available", back_populates="faculty")
-    # ondelete = "CASCADE"
+    ondelete = "CASCADE"
+
+
+class PiMessage(Base):
+    """PiMessage model
+
+    user_id as foreign key in the available model"""
+
+    __tablename__ = "pi_message"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete='CASCADE', name='fk_user_pi_message'))
+    duration = Column(Integer, nullable=False)
+    duration_unit = Column(String(50), nullable=False)
+    message = Column(String(255), nullable=False)
+    created_at = Column(
+        String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
+
+    def update_message(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return self
+
+class Notification(Base):
+    """Notification model
+
+    user_id as foreign key in the available model"""
+
+    __tablename__ = "notification"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(255), ForeignKey(
+        'faculty.user_id', ondelete='CASCADE', name='fk_user_notification'))
+    event_type = Column(String(255), nullable=False)
+    message = Column(String(255), nullable=False)
+    created_at = Column(
+        String(255), default=lambda: datetime.now().strftime("%B %d, %Y"))
+
+    def update_notification(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+        return self
+    ondelete = "CASCADE"    
+    
 
 
 class Student(Base):

@@ -142,3 +142,16 @@ class BlacklistResponse(BaseModel):
         json_encoders = {
             datetime: lambda dt: dt.isoformat()
         }
+
+
+class PiMessageResponse(BaseModel):
+    user_id: str
+    duration: int
+    duration_unit: str
+    message: str
+
+
+class NotificationResponse(BaseModel):
+    user_id: str
+    event_type: str
+    message: str
