@@ -152,6 +152,7 @@ class PiMessageResponse(BaseModel):
 
 
 class NotificationResponse(BaseModel):
+    id: int
     user_id: str
     event_type: str
     message: str

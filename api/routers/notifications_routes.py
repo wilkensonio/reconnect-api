@@ -71,7 +71,7 @@ async def update_user(hootloot_id: str,
         )
 
 
-@router.get("/get/notifications/{hootloot_id}", response_model=List[response_schema.NotificationResponse])
+@router.get("/notifications_by_user/{hootloot_id}", response_model=List[response_schema.NotificationResponse])
 async def get_notification_by_user(hootloot_id: str, db: Session = Depends(database.get_db),
                                    token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get all notifications for a user
