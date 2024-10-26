@@ -9,7 +9,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
-
+from ..routers.ws_routes import create_notification_route as ws_create_notification
+from ..schemas.notification_schema import NotificationSchema
 
 router = APIRouter()
 
@@ -18,13 +19,15 @@ appointment_crud = crud_appointment.CrudAppointment()
 
 
 @router.post("/appointment/create/", response_model=response_schema.CreateAppointmentResponse)
-def create_appointment(appointment: schemas.CreateAppointment, db: Session = Depends(database.get_db),
-                       token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.CreateAppointmentResponse:
+async def create_appointment(appointment: schemas.CreateAppointment, db: Session = Depends(database.get_db),
+                             token: str = Depends(jwt_utils.oauth2_scheme)) -> response_schema.CreateAppointmentResponse:
     """Create a new appointment 
 
     Args:
 
         appointment (schemas.CreateAppointment): appointment details 
+        date format: YYYY-MM-DD
+        time format: 12:00 
 
     Returns:
 
@@ -32,7 +35,19 @@ def create_appointment(appointment: schemas.CreateAppointment, db: Session = Dep
 
     jwt_utils.verify_token(token)
 
-    return appointment_crud.appointment_create(db, appointment)
+    created_appt = appointment_crud.appointment_create(db, appointment)
+    user_id = appointment.faculty_id  # Assuming the appointment schema has user_id
+    print(user_id)
+    notification_data = NotificationSchema(
+        user_id=user_id,
+        event_type="appointment_scheduled",
+        message=f"Appointment scheduled for {appointment.start_time}"
+    )
+    try:
+        await ws_create_notification(user_id, notification_data, db)
+    except Exception as e:
+        print("Error sending notification", e)
+    return created_appt
 
 
 @router.get("/appointments/", response_model=List[response_schema.CreateAppointmentResponse])

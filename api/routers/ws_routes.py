@@ -8,8 +8,18 @@ router = APIRouter()
 
 
 @router.post("/ws_create_notifications/{user_id}")
-async def create_notification_route(user_id: str, notification_data: NotificationSchema, db: Session = Depends(get_db)):
-    """HTTP route to create a notification."""
+async def create_notification_route(user_id: str, notification_data: NotificationSchema,
+                                    db: Session = Depends(get_db)):
+    """HTTP route to create a notification.
+
+    Args: 
+
+        user_id (str): User id
+        notification_data (NotificationSchema): Notification details
+
+        Returns:
+
+            dict: Success status and message"""
     success, message = await handle_create_notification(db, user_id, notification_data)
     return {"success": success, "message": message}
 

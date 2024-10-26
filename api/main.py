@@ -23,9 +23,8 @@ app.add_middleware(
 
 models.Base.metadata.create_all(bind=database.engine)
 app.include_router(app_token.router, prefix="/api/v1")
+app.include_router(ws_routes.router, prefix="/api/v1")
 
-app.include_router(ws_routes.router, prefix="/api/v1",
-                   dependencies=[Depends(validate_api_key.validate_api_key)])
 app.include_router(user_routes.router, prefix="/api/v1",
                    dependencies=[Depends(validate_api_key.validate_api_key)])
 app.include_router(available_routes.router, prefix="/api/v1",

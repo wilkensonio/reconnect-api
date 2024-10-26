@@ -72,7 +72,9 @@ class AppointmentBase(BaseModel):
 
     reason: str = Field(..., description="The reason for the appointment")
 
-    date: str = Field(..., description="The date of the appointment")
+    date: str = Field(...,
+                      pattern=r'^\d{4}-\d{2}-\d{2}$',
+                      description="The date of the appointment")
 
     class Config:
         """Configurations for the schema"""
