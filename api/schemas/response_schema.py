@@ -156,3 +156,19 @@ class NotificationResponse(BaseModel):
     user_id: str
     event_type: str
     message: str
+
+
+class CheckinResponse(BaseModel):
+    student_id: str
+    faculty_id: str
+    status: str
+    date: str
+    start_time: str
+    end_time: str
+    reason: str
+
+    class Config:
+        from_attributes = True
+        json_encoders = {
+            datetime: lambda dt: dt.isoformat()
+        }

@@ -139,7 +139,7 @@ class CrudAppointment:
         if not appointment:
             raise HTTPException(
                 status_code=404, detail="Appointment not found")
-        for key, value in appointment_update.dict().items():
+        for key, value in appointment_update.model_dump().items():
             setattr(appointment, key, value)
         db.commit()
         db.refresh(appointment)
