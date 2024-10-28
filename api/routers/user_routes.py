@@ -498,7 +498,7 @@ def get_user_by_id(user_id: str, db: Session = Depends(database.get_db), token: 
 
 @router.get("/students/", response_model=List[response_schema.Get_StudentResponse])
 async def get_students(db: Session = Depends(database.get_db),
-                 token: str = Depends(jwt_utils.oauth2_scheme)):
+                       token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get all students
 
 
@@ -550,9 +550,9 @@ def reset_password(data: user_schema.ResetPassword, db:  Session = Depends(datab
 
 @router.put("/user/update/{hootloot_id}", response_model=response_schema.UserUpdateResponse)
 async def update_user(hootloot_id: str,
-                user_update: user_schema.UserUpdate,
-                db: Session = Depends(database.get_db),
-                token: str = Depends(jwt_utils.oauth2_scheme)):
+                      user_update: user_schema.UserUpdate,
+                      db: Session = Depends(database.get_db),
+                      token: str = Depends(jwt_utils.oauth2_scheme)):
     """Update a user by  id
 
     Attributes
@@ -604,7 +604,7 @@ async def update_user(hootloot_id: str,
 
 @ router.delete("/user/delete/{email_or_id}", response_model=dict)
 async def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database.get_db),
-                          token: str = Depends(jwt_utils.oauth2_scheme)):
+                                token: str = Depends(jwt_utils.oauth2_scheme)):
     """Delete a user by id or by email
 
     Attributes
@@ -643,3 +643,47 @@ async def delete_by_email_or_id(email_or_id: str, db: Session = Depends(database
             status_code=400,
             detail="An error occurred while attempting to delete user"
         )
+
+
+@router.post("/student/checkin/{student_id}/{faculty_id}", response_model=response_schema.CheckinResponse)
+def student_checkin(student_id: str, faculty_id: str, db: Session = Depends(database.get_db),
+                    token: str = Depends(jwt_utils.oauth2_scheme)):
+    """Checkin a student to a faculty
+
+    Args:
+
+        student_id (str): Student ID
+        faculty_id (str): Faculty ID
+
+    Returns:
+
+        dict: {"detail" : str}
+    """
+    jwt_utils.verify_token(token)
+
+    #  get appontment where student_id = student_id and faculty_id = faculty_id
+    get_appointment = user_crud.get_appointment_with_falculty_student_id(
+        db, student_id, faculty_id)
+
+    if not get_appointment:
+        raise HTTPException(
+            status_code=400,
+            detail="No appointment found for the student"
+        )
+
+    checkin = user_crud.student_checkin(db, student_id, faculty_id)
+
+    if not checkin:
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to checkin student"
+        )
+    return response_schema.CheckinResponse(
+        student_id=student_id,
+        faculty_id=faculty_id,
+        status="checked in",
+        date="today",
+        start_time="now",
+        end_time="now",
+        reason="reason"
+    )

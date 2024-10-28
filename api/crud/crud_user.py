@@ -45,6 +45,23 @@ class UserCrud:
         return new_user
 
     @staticmethod
+    def get_user_by_phone_number(db: Session, phone_number: str):
+        """Get a user by phone number
+
+        Args:
+            db (Session): Database session
+            phone_number (str): User phone number
+
+        Returns:
+            User: User details"""
+
+        existing_user = db.query(models.User).filter(
+            models.User.phone_number == phone_number).first()
+        if existing_user:
+            return existing_user
+        return None
+
+    @staticmethod
     def get_user_by_email(db: Session, email: str):
         """Get a user by email
 
