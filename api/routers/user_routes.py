@@ -269,6 +269,7 @@ async def upload_students_csv(
             'Last Name': 'last_name',
         })
         df['phone_number'] = '0000000000'
+        df['student_id'] = df['student_id'].astype(str)
 
         # Filter out unnecessary columns
         required_columns = ['email', 'student_id',
