@@ -170,12 +170,7 @@ class UserCrud:
         Returns:
             List[Student]: List of all students"""
 
-        backlisted_ids = select(models.Blacklist.user_id)
-        students = db.query(models.Student).filter(
-            ~models.Student.student_id.in_(
-                db.execute(backlisted_ids).scalars())
-        ).all()
-        return students
+        return db.query(models.Student).all()
 
     @staticmethod
     def get_student_by_email(db: Session, email: str):
@@ -255,10 +250,7 @@ class UserCrud:
             existing_student_id = db.query(models.Student).filter(
                 models.Student.student_id == student.student_id).first()
 
-            is_blacklisted = db.query(models.Blacklist).filter(
-                models.Blacklist.user_id == student.student_id).first()
-
-            if existing_student or existing_student_id or is_blacklisted:
+            if existing_student or existing_student_id:
                 continue
 
             try:
@@ -278,7 +270,7 @@ class UserCrud:
         return new_students
 
     @ staticmethod
-    def blacklist_user(db: Session, student_id: Optional[str] = None, email: Optional[str] = None):
+    def delete_student(db: Session, student_id: Optional[str] = None, email: Optional[str] = None):
         """Delete a student
 
         Args:
@@ -299,25 +291,11 @@ class UserCrud:
                 models.Student.email == email).first()
 
         if existing_student:
-            # Add to blacklist
-            db.add(models.Blacklist(user_id=existing_student.student_id))
+            db.delete(existing_student)
             db.commit()
-            db.refresh(existing_student)
             return True
 
         return False
-
-    @ staticmethod
-    def get_blacklisted_students(db: Session):
-        """Get all blacklisted students
-
-        Args:
-            db (Session): Database session
-
-        Returns:
-            List[Student]: List of all blacklisted students"""
-
-        return db.query(models.Blacklist).all()
 
     @ staticmethod
     def reset_password(db: Session, email: str, new_password: str):
