@@ -79,8 +79,8 @@ jobs:
             -e DB_PORT="3306" \
             -e ACCESS_TOKEN_EXPIRE_MINUTES=60 \
             -e SECRET_KEY="${{secrets.SECRET_KEY}}" \
-            -e ALGORITHM=${{secrets.ALGORITHM}} \
-            -e ALGORITHM=${{secrets.IFTTT_KEY}} \
+            -e ALGORITHM="${{secrets.ALGORITHM}}" \
+            -e ALGORITHM="${{secrets.IFTTT_KEY}}" \
             ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
 
             # Check logs for verification
