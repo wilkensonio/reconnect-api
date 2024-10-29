@@ -290,27 +290,23 @@ async def upload_students_csv(
             status_code=400, detail=f"Error processing the file: {e}")
 
 
-@router.post("/blacklist/{user_id}", response_model=dict)
-async def blacklist_user_by_id(
-    user_id: str,
+@router.delete("/delete/student/{student_id}", response_model=dict)
+async def delete_student_by_id(
+    student_id: str,
     db: Session = Depends(database.get_db),
     token: str = Depends(jwt_utils.oauth2_scheme),
 ):
-    """Blacklist a user by id
+    """Delete student by id or email
 
     Args:
 
-        user_id : str
-            Student id (hootloot) or email
-
-        token : str
-            User token
-
+        student_id : str
+            Student id (hootloot) or email 
     Returns:
 
         dict: {"detail" : str}
     """
-    if not user_id:
+    if not student_id:
         raise HTTPException(
             status_code=400,
             detail="User ID cannot be empty"
@@ -318,42 +314,10 @@ async def blacklist_user_by_id(
 
     jwt_utils.verify_token(token)
 
-    if user_crud.blacklist_user(db, student_id=user_id):
-        return {"detail": f"User {user_id} blacklisted"}
+    if user_crud.delete_student(db, student_id=student_id):
+        return {"detail": f"User {student_id} deleted successfully"}
 
-    return {"detail": f"User {user_id} not found or already blacklisted"}
-
-
-@router.get("/blacklist/", response_model=List[response_schema.BlacklistResponse])
-async def blacklist_user(
-        db: Session = Depends(database.get_db),
-        token: str = Depends(jwt_utils.oauth2_scheme)):
-    """Blacklist a user
-
-    Args:
-
-        token : str
-            User token
-
-    Returns:
-
-        dict: {"detail" : str}
-    """
-
-    jwt_utils.verify_token(token)
-    blacklisted = []
-    try:
-        blacklisted = user_crud.get_blacklisted_students(db)
-        if not blacklisted:
-            return []
-    except Exception as e:
-        logging.error(e)
-        raise HTTPException(
-            status_code=400,
-            detail="An error occurred while attempting to blacklist user"
-        )
-
-    return [response_schema.BlacklistResponse(student_id=student.user_id) for student in blacklisted]
+    return {"detail": f"User {student_id} not found or already deleted"}
 
 
 @router.post("/kiosk-signin/", response_model=response_schema.KioskSigninResponse)
