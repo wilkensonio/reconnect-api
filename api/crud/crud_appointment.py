@@ -162,3 +162,19 @@ class CrudAppointment:
         db.delete(appointment)
         db.commit()
         return True
+
+    @staticmethod
+    def student_checkin(id: int, db: Session):
+        """Get  appointment by ID
+
+        Args: 
+
+            id: int appointment ID
+
+        Returns:
+            None if appointment not found, Appointment details otherwise"""
+
+        appointments = db.query(models.Appointment).filter(
+            models.Appointment.id == id).first()
+
+        return None if not appointments else appointments

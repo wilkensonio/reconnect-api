@@ -211,6 +211,10 @@ async def delete_update_appointment(appointment_id: int, db: Session = Depends(d
     appointment_delete = appointment_crud.get_appointment_by_id(
         db, appointment_id)
 
+    if not appointment_delete:
+        raise HTTPException(
+            status_code=404, detail="Appointment not found or already canceled")
+
     deleted = appointment_crud.delete_appointment(db, appointment_id)
 
     formated_date = datetime.strptime(
@@ -241,3 +245,59 @@ async def delete_update_appointment(appointment_id: int, db: Session = Depends(d
         logging.error("Error sending sms", e)
 
     return deleted
+
+
+@router.post("/student/checkin/{id}", response_model=response_schema.CheckinResponse)
+async def student_checkin(id: int, db: Session = Depends(database.get_db),
+                          token: str = Depends(jwt_utils.oauth2_scheme)):
+    """ Student checkin
+
+    Args: 
+        id (int): appointment ID
+
+    Returns: 
+
+        response_schema.CheckinResponse: Checkin response
+    """
+    jwt_utils.verify_token(token)
+
+    appointment = appointment_crud.get_appointment_by_id(
+        db, id)
+
+    if not appointment:
+        raise HTTPException(
+            status_code=400,
+            detail="No appointments found"
+        )
+
+    msg_notification = f"Your {appointment.start_time} appointment"
+    msg_notification += f"  has arrived and checked in"
+
+    notification_data = NotificationSchema(
+        user_id=appointment.faculty_id,
+        event_type="appointment_checked_in",
+        message=msg_notification
+    )
+
+    try:
+        await ws_create_notification(user_id=appointment.faculty_id,
+                                     notification_data=notification_data, db=db)
+    except Exception as e:
+        logging.error("Error sending notification", e)
+    try:
+        await sms_utils.send_sms(message=msg_notification)
+    except Exception as e:
+        logging.error("Error sending sms", e)
+
+    today = datetime.now().date().strftime("%B %d, %Y")
+
+    return response_schema.CheckinResponse(
+        id=appointment.id,
+        student_id=appointment.student_id,
+        faculty_id=appointment.faculty_id,
+        status="checked in",
+        date=today,
+        start_time=appointment.start_time,
+        end_time=appointment.end_time,
+        reason=appointment.reason
+    )

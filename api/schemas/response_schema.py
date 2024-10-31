@@ -159,6 +159,7 @@ class NotificationResponse(BaseModel):
 
 
 class CheckinResponse(BaseModel):
+    id: int
     student_id: str
     faculty_id: str
     status: str
