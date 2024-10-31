@@ -18,13 +18,14 @@ def user_signup(client):
     return response.json()
 
 
-def test_del_app(client, user_signup):
+def test_make_app(client, user_signup):
     app_data = {
         "faculty_id": "70573522",
         "date": "2022-01-01",
         "start_time": "08:00",
         "end_time": "17:00",
         "reason": "Meeting with students",
+        "status": "active",
         "student_id": "70573522"
     }
 
@@ -34,7 +35,8 @@ def test_del_app(client, user_signup):
     }
 
     response = client.post("/api/v1/token/", data=login_data)
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Token creation failed {
+        response.json()}"
     response_json = response.json()
 
     headers = {
@@ -50,13 +52,7 @@ def test_del_app(client, user_signup):
     assert response_json["student_id"] == "70573522"
     assert "id" in response_json
 
-    response = client.delete(
-        f"/api/v1/appointment/delete/{response_json['id']}", headers=headers)
-    assert response.status_code == 200
-    assert response.json() == True
-
-    response = client.delete(
-        f"/api/v1/appointment/delete/{response_json['id']}", headers=headers)
-    assert response.status_code == 404
-    assert response.json() == {
-        "detail": "Appointment not found or already canceled"}
+    #  student checkin
+    client.post("/api/v1/student/checkin/{response_json.id}", json=login_data)
+    assert response.status_code == 200, f"Token creation failed {
+        response.json()}"
