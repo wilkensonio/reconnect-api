@@ -77,3 +77,15 @@ class PiMessage:
             models.PiMessage: User's message"""
 
         return db.query(models.PiMessage).filter(models.PiMessage.user_id == user_id).first()
+
+    @staticmethod
+    def get_all_messages(db: Session):
+        """Get all messages
+
+        Args:
+            db (Session): Database session
+
+        Returns:
+            List[models.PiMessage]: List of all messages"""
+
+        return db.query(models.PiMessage).all()
