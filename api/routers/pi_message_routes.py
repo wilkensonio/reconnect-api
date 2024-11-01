@@ -135,16 +135,13 @@ def delete_message(hootloot_id: str,
 
 @router.get("/pi-message/get/{hootloot_id}", response_model=response_schema.PiMessageResponse)
 def get_message(hootloot_id: str,
-                db: Session = Depends(database.get_db),
-                token: str = Depends(jwt_utils.oauth2_scheme)):
+                db: Session = Depends(database.get_db)):
     """Get the message to be displayed on the pi
 
     Args:
 
         hootloot_id (str): User id, this the id of the faculty
     """
-
-    jwt_utils.verify_token(token)
 
     try:
         int(hootloot_id)
