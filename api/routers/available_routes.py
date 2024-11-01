@@ -65,7 +65,7 @@ def get_availability_by_id(available_id: int, db: Session = Depends(database.get
 
 @router.get("/availability/get-by-user/{faculty_id}", response_model=List[response_schema.AvailableResponse])
 def get_availability_by_user(faculty_id: str, db: Session = Depends(database.get_db),
-                             token: str = Depends(jwt_utils.oauth2_scheme)) -> List[schemas.Available]:
+                             token: str = Depends(jwt_utils.oauth2_scheme)):
     """Get availability by user
 
     Args:
@@ -77,8 +77,21 @@ def get_availability_by_user(faculty_id: str, db: Session = Depends(database.get
         List[schemas.Available]: List of availabilities"""
 
     jwt_utils.verify_token(token)
+    results = []
 
-    return available.get_availability_by_user(db, faculty_id)
+    avail = available.get_availability_by_user(db, faculty_id)
+
+    if not avail:
+        raise HTTPException(status_code=404, detail="Availability not found")
+    for a in avail:
+        results.append(response_schema.AvailableResponse(
+            id=a.id,
+            faculty_id=a.user_id,
+            day=a.day,
+            start_time=a.start_time,
+            end_time=a.end_time
+        ))
+    return results
 
 
 # Get all availabilities

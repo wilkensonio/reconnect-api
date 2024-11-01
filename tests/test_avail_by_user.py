@@ -18,7 +18,34 @@ def user_signup(client):
     return response.json()
 
 
-def test_get_avail_by_user(client, user_signup):
+@pytest.fixture
+def create_availability(client, user_signup):
+    login_data = {
+        "username": user_signup["email"],
+        "password": "secret_password"
+    }
+    response = client.post("/api/v1/token/", data=login_data)
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+
+    headers = {
+        'Authorization': f"Bearer {token}"
+    }
+
+    availability_data = {
+        "user_id": user_signup["user_id"],
+        "day": "Monday",
+        "start_time": "09:00",
+        "end_time": "17:00"
+    }
+
+    response = client.post("/api/v1/availability/create",
+                           headers=headers, json=availability_data)
+    assert response.status_code == 200
+    return response.json()
+
+
+def test_get_avail_by_user(client, user_signup, create_availability):
     login_data = {
         "username": user_signup["email"],
         "password": "secret_password"
@@ -34,6 +61,6 @@ def test_get_avail_by_user(client, user_signup):
     faculty_id = user_signup["user_id"]
     response = client.get(
         f"/api/v1/availability/get-by-user/{faculty_id}", headers=headers)
-
-    assert response.status_code == 200, f"Failed to delete availability {
-        response.json()}"
+    if response.status_code != 200:
+        assert response.status_code == 404
+    assert response.status_code == 200
