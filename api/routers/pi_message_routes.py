@@ -174,7 +174,7 @@ def get_message(hootloot_id: str,
         )
 
 
-@router.get("/pi-message/get-all", response_model=List[response_schema.PiMessageResponse])
+@router.get("/pi-message/get-all", response_model=List[response_schema.PiMessageResponseWithUserInfo])
 def get_all_messages(db: Session = Depends(database.get_db)):
     """Get all messages to be displayed on the pi
 
@@ -182,11 +182,22 @@ def get_all_messages(db: Session = Depends(database.get_db)):
 
         None
     """
+    messag_results = []
 
     try:
         messages = pi_msg.get_all_messages(db)
         if messages:
-            return messages
+            for message in messages:
+                user = user_crud.get_user_by_id(db, user_id=message.user_id)
+                messag_results.append(response_schema.PiMessageResponseWithUserInfo(
+                    first_name=user.first_name,
+                    last_name=user.last_name,
+                    user_id=message.user_id,
+                    message=message.message,
+                    duration=message.duration,
+                    duration_unit=message.duration_unit
+                ))
+            return messag_results
         else:
             raise HTTPException(
                 status_code=404,
