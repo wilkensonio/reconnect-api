@@ -64,3 +64,16 @@ class PiMessage:
             return True
 
         return False
+
+    @staticmethod
+    def get_message(db: Session, user_id: str):
+        """Get a user's message
+
+        Args:
+            db (Session): Database session
+            user_id (str): User id
+
+        Returns:
+            models.PiMessage: User's message"""
+
+        return db.query(models.PiMessage).filter(models.PiMessage.user_id == user_id).first()

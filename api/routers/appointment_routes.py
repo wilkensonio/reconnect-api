@@ -253,11 +253,13 @@ async def student_checkin(id: int, db: Session = Depends(database.get_db),
     """ Student checkin
 
     Args: 
-        id (int): appointment ID
+
+        id (int): appointment ID, the id generate by the system when the appointment is created, this id is coming from the appointments. 
+
 
     Returns: 
 
-        response_schema.CheckinResponse: Checkin response
+        response_schema.CheckinResponse: Checkin response, the appointment details with the status checked in.
     """
     jwt_utils.verify_token(token)
 

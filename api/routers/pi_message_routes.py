@@ -26,10 +26,10 @@ pi_msg = crud_pi_message.PiMessage()
 
 
 @router.put("/pi-message/update/{hootloot_id}", response_model=response_schema.PiMessageResponse)
-async def update_user(hootloot_id: str,
-                      message_update: pi_message_schema.PiMessage,
-                      db: Session = Depends(database.get_db),
-                      token: str = Depends(jwt_utils.oauth2_scheme)):
+async def update_message(hootloot_id: str,
+                         message_update: pi_message_schema.PiMessage,
+                         db: Session = Depends(database.get_db),
+                         token: str = Depends(jwt_utils.oauth2_scheme)):
     """Update the message to be displayed on the pi
 
     Args:
@@ -86,4 +86,92 @@ async def update_user(hootloot_id: str,
         raise HTTPException(
             status_code=400,
             detail="An error occurred while attempting to update user"
+        )
+
+
+@router.delete("/pi-message/delete/{hootloot_id}", response_model=response_schema.PiMessageResponse)
+def delete_message(hootloot_id: str,
+                   db: Session = Depends(database.get_db),
+                   token: str = Depends(jwt_utils.oauth2_scheme)):
+    """Delete the message to be displayed on the pi
+
+    Args:
+
+        hootloot_id (str): User id, this the id of the faculty
+    """
+
+    jwt_utils.verify_token(token)
+
+    try:
+        int(hootloot_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="hootloot_id must be an gigit only 0-9"
+        )
+
+    try:
+        is_deleted = pi_msg.delete_message(db, user_id=hootloot_id)
+        if is_deleted:
+            return response_schema.PiMessageResponse(
+                user_id=hootloot_id,
+                message="",
+                duration=0,
+                duration_unit=""
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="User not found"
+            )
+    except Exception as e:
+        logging.error(e)
+        print(e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to delete user"
+        )
+
+
+@router.get("/pi-message/get/{hootloot_id}", response_model=response_schema.PiMessageResponse)
+def get_message(hootloot_id: str,
+                db: Session = Depends(database.get_db),
+                token: str = Depends(jwt_utils.oauth2_scheme)):
+    """Get the message to be displayed on the pi
+
+    Args:
+
+        hootloot_id (str): User id, this the id of the faculty
+    """
+
+    jwt_utils.verify_token(token)
+
+    try:
+        int(hootloot_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="hootloot_id must be an gigit only 0-9"
+        )
+
+    try:
+        message = pi_msg.get_message(db, user_id=hootloot_id)
+        if message:
+            return response_schema.PiMessageResponse(
+                user_id=hootloot_id,
+                message=message.message,
+                duration=message.duration,
+                duration_unit=message.duration_unit
+            )
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="User not found"
+            )
+    except Exception as e:
+        logging.error(e)
+        print(e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to get user"
         )
