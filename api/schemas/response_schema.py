@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import EmailStr, BaseModel, field_validator
+from typing import Optional
 
 
 class CreateStudentResponse(BaseModel):
@@ -146,7 +147,14 @@ class BlacklistResponse(BaseModel):
         }
 
 
-class PiMessageResponse(BaseModel):
+class PiMessageResponse(BaseModel): 
+    user_id: str
+    duration: int
+    duration_unit: str
+    message: str
+class PiMessageResponseWithUserInfo(BaseModel):
+    first_name:str
+    last_name:str
     user_id: str
     duration: int
     duration_unit: str
