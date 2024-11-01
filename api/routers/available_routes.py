@@ -60,7 +60,13 @@ def get_availability_by_id(available_id: int, db: Session = Depends(database.get
     availability = available.get_availability_by_id(db, available_id)
     if not availability:
         raise HTTPException(status_code=404, detail="Availability not found")
-    return availability
+    return response_schema.AvailableResponse(
+        id=availability.id,
+        faculty_id=availability.user_id,
+        day=availability.day,
+        start_time=availability.start_time,
+        end_time=availability.end_time
+    )
 
 
 @router.get("/availability/get-by-user/{faculty_id}", response_model=List[response_schema.AvailableResponse])

@@ -162,7 +162,7 @@ def get_message(hootloot_id: str,
             )
         else:
             raise HTTPException(
-                status_code=400,
+                status_code=404,
                 detail="User not found"
             )
     except Exception as e:
@@ -171,4 +171,31 @@ def get_message(hootloot_id: str,
         raise HTTPException(
             status_code=400,
             detail="An error occurred while attempting to get user"
+        )
+
+
+@router.get("/pi-message/get-all", response_model=List[response_schema.PiMessageResponse])
+def get_all_messages(db: Session = Depends(database.get_db)):
+    """Get all messages to be displayed on the pi
+
+    Args:
+
+        None
+    """
+
+    try:
+        messages = pi_msg.get_all_messages(db)
+        if messages:
+            return messages
+        else:
+            raise HTTPException(
+                status_code=404,
+                detail="No messages found"
+            )
+    except Exception as e:
+        logging.error(e)
+        print(e)
+        raise HTTPException(
+            status_code=400,
+            detail="An error occurred while attempting to get users"
         )
