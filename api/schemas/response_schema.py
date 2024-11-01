@@ -88,6 +88,8 @@ class GetUsersResponse(BaseModel):
 
 
 class AvailableResponse(BaseModel):
+    id: int
+    faculty_id: str
     day: str
     start_time: str
     end_time: str
