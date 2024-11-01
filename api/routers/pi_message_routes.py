@@ -28,8 +28,7 @@ pi_msg = crud_pi_message.PiMessage()
 @router.put("/pi-message/update/{hootloot_id}", response_model=response_schema.PiMessageResponse)
 async def update_message(hootloot_id: str,
                          message_update: pi_message_schema.PiMessage,
-                         db: Session = Depends(database.get_db),
-                         token: str = Depends(jwt_utils.oauth2_scheme)):
+                         db: Session = Depends(database.get_db)):
     """Update the message to be displayed on the pi
 
     Args:
@@ -37,8 +36,6 @@ async def update_message(hootloot_id: str,
         hootloot_id (str): User id, this the id of the faculty
         message_update (pi_message_schema.PiMessage): Message details to be updated
     """
-
-    jwt_utils.verify_token(token)
 
     valid_duration_units = ["seconds", "minutes",
                             "hours", "days", "weeks", "months"]
@@ -91,16 +88,13 @@ async def update_message(hootloot_id: str,
 
 @router.delete("/pi-message/delete/{hootloot_id}", response_model=response_schema.PiMessageResponse)
 def delete_message(hootloot_id: str,
-                   db: Session = Depends(database.get_db),
-                   token: str = Depends(jwt_utils.oauth2_scheme)):
+                   db: Session = Depends(database.get_db)):
     """Delete the message to be displayed on the pi
 
     Args:
 
         hootloot_id (str): User id, this the id of the faculty
     """
-
-    jwt_utils.verify_token(token)
 
     try:
         int(hootloot_id)
