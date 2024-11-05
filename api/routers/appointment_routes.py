@@ -2,7 +2,7 @@
 
 import logging
 from .. import database
-from ..crud import crud_appointment
+from ..crud import crud_appointment, crud_user
 from ..schemas import available_schema as schemas
 from ..schemas import response_schema
 from ..utils import jwt_utils, sms_utils
@@ -18,6 +18,7 @@ router = APIRouter()
 
 
 appointment_crud = crud_appointment.CrudAppointment()
+user_crud = crud_user.UserCrud()
 
 
 @router.post("/appointment/create/", response_model=response_schema.CreateAppointmentResponse)
@@ -271,8 +272,9 @@ async def student_checkin(id: int, db: Session = Depends(database.get_db),
             status_code=400,
             detail="No appointments found"
         )
-
+    student = user_crud.get_student_by_id(db, appointment.student_id)
     msg_notification = f"Your {appointment.start_time} appointment"
+    msg_notification += f" with {student.first_name} {student.last_name}"
     msg_notification += f"  has arrived and checked in"
 
     notification_data = NotificationSchema(
