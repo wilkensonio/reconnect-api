@@ -20,7 +20,8 @@ app.add_middleware(
                    'http://ec2-3-82-206-23.compute-1.amazonaws.com/',
                    'http://ec2-3-82-206-23.compute-1.amazonaws.com'
                    'http://ec2-3-82-206-23.compute-1.amazonaws.com:80/',
-                   'http://ec2-3-82-206-23.compute-1.amazonaws.com:80'
+                   'http://ec2-3-82-206-23.compute-1.amazonaws.com:80',
+                   'https://reconnect-faculty.s3.us-east-1.amazonaws.com/index.html'
                    ],
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods
