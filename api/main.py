@@ -13,19 +13,11 @@ app = FastAPI()
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    # Allow requests from this origin
-    allow_origins=["http://localhost:3000",
-                   "http://localhost:8000",
-                   "http://localhost",
-                   'http://ec2-3-82-206-23.compute-1.amazonaws.com/',
-                   'http://ec2-3-82-206-23.compute-1.amazonaws.com'
-                   'http://ec2-3-82-206-23.compute-1.amazonaws.com:80/',
-                   'http://ec2-3-82-206-23.compute-1.amazonaws.com:80',
-                   'https://reconnect-faculty.s3.us-east-1.amazonaws.com/index.html'
-                   ],
+    # Allows all domains; remember to restrict in production.
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.).
+    allow_headers=["*"],  # Allows all headers.
 )
 
 
