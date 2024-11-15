@@ -12,6 +12,10 @@ permissions:
   contents: read
   id-token: write # Required for AWS authentication
 
+concurrency:
+  group: deploy-fastapi-to-ec2-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy:
     if: github.event.pull_request.merged == true

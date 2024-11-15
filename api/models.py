@@ -40,7 +40,7 @@ class User(Base):
 
     def update_user(self, **kwargs):
         for key, value in kwargs.items():
-            if key == "password" and value is not None and 0 < len(value) >= 8:
+            if key == "password":
                 hash_password = self.pwd_context.hash(value)
                 setattr(self, key, hash_password)
             else:

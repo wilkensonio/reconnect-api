@@ -541,9 +541,6 @@ async def update_user(hootloot_id: str,
     jwt_utils.verify_token(token)
 
     try:
-        if not user_update.password:
-            user_update.password = user_crud.get_user_by_id(
-                db, hootloot_id).password
 
         is_updated = user_crud.update_user(
             db, user_id=hootloot_id, user=user_update)
