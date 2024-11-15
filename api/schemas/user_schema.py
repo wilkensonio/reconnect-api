@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import Field, EmailStr, BaseModel
 from .common_field_model import CommonField
 # User schema for creating a user (faculty)
@@ -87,8 +88,8 @@ class UserUpdate(BaseModel):
     phone_number: str = Field(..., description="Phone number must be unique",
                               min_length=10)
 
-    password: str = Field(...,
-                          description="Password must be at least 8 characters", min_length=8)
+    password: Optional[str] = Field(...,
+                                    description="Password must be at least 8 characters", min_length=0)
 
 
 class StudentCreate(StudentBase):

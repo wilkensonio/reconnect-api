@@ -40,7 +40,7 @@ class User(Base):
 
     def update_user(self, **kwargs):
         for key, value in kwargs.items():
-            if key == "password":
+            if key == "password" and value is not None and 0 < len(value) >= 8:
                 hash_password = self.pwd_context.hash(value)
                 setattr(self, key, hash_password)
             else:
@@ -72,6 +72,7 @@ class PiMessage(Base):
             setattr(self, key, value)
         return self
 
+
 class Notification(Base):
     """Notification model
 
@@ -91,8 +92,7 @@ class Notification(Base):
         for key, value in kwargs.items():
             setattr(self, key, value)
         return self
-    ondelete = "CASCADE"    
-    
+    ondelete = "CASCADE"
 
 
 class Student(Base):
