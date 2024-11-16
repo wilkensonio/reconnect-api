@@ -62,11 +62,11 @@ jobs:
             echo "Pulling latest Docker image..."
             docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
 
-            echo "Removing older Docker images..."
-            docker image prune -f
+            # # echo "Removing older Docker images..."
+            # docker image prune -f
 
-            # Restart Docker service to clear any issues
-            sudo systemctl restart docker
+            # # Restart Docker service to clear any issues
+            # sudo systemctl restart docker
 
             # Run the new Docker container with env variables
             docker run -d --name fastapi-app -p 8000:8000 \
