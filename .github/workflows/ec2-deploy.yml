@@ -1,5 +1,4 @@
-# This section is intentionally left without certain parameters due to...
-# We will address these warnings later
+# This workflow will deploy a FastAPI app to an AWS EC2 instance
 name: Deploy FastAPI to AWS EC2
 
 on:
